@@ -1,0 +1,14 @@
+package net.mind_engine.oculus.testrunmanager.client;
+
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+
+import net.mind_engine.oculus.testrunmanager.service.ClientServerRemoteInterface;
+
+public class TRMClient {
+	public static ClientServerRemoteInterface getServer(String serverAddress) throws RemoteException, MalformedURLException, NotBoundException {
+		return (ClientServerRemoteInterface) Naming.lookup(serverAddress);
+	}
+}
