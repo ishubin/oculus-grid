@@ -2,11 +2,6 @@ package net.mindengine.oculus.grid.server;
 
 import java.io.File;
 import java.io.FileReader;
-import java.net.InetAddress;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -14,6 +9,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
+import net.mindengine.jeremy.client.Client;
+import net.mindengine.jeremy.messaging.json.DefaultJsonLanguageHandler;
+import net.mindengine.jeremy.registry.Registry;
 import net.mindengine.oculus.grid.GridUtils;
 import net.mindengine.oculus.grid.console.ConsoleCommandScanner;
 import net.mindengine.oculus.grid.domain.agent.AgentInformation;
@@ -36,7 +34,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Ivan Shubin
  * 
  */
-public class TRMServer extends UnicastRemoteObject implements ClientServerRemoteInterface, AgentServerRemoteInterface {
+public class TRMServer implements ClientServerRemoteInterface, AgentServerRemoteInterface {
 	private static final long serialVersionUID = 699877285660409518L;
 
 	private Log logger = LogFactory.getLog(getClass());
@@ -54,8 +52,7 @@ public class TRMServer extends UnicastRemoteObject implements ClientServerRemote
 	 */
 	private Long storeCompletedTasksTime = 300000L;
 
-	protected TRMServer() throws RemoteException {
-		super();
+	protected TRMServer() {
 	}
 
 	/**
@@ -268,7 +265,7 @@ public class TRMServer extends UnicastRemoteObject implements ClientServerRemote
 	}
 
 	@Override
-	public Collection<Task> getTasksList() throws RemoteException {
+	public Collection<Task> getTasksList() {
 		taskContainer.getTaskLock().lock();
 		Collection<Task> tasksList = null;
 		try {
@@ -279,16 +276,23 @@ public class TRMServer extends UnicastRemoteObject implements ClientServerRemote
 			}
 		}
 		catch (Throwable e) {
-			throw new RemoteException(e.getMessage());
+			throw runtimeException(e);
 		}
 		finally {
 			taskContainer.getTaskLock().unlock();
 		}
 		return tasksList;
 	}
+	
+	private static RuntimeException runtimeException(Throwable exception) {
+	    if(exception instanceof RuntimeException) {
+            throw (RuntimeException)exception;
+        }
+        else throw new RuntimeException(exception);
+	}
 
 	@Override
-	public Collection<Task> getAllUserTasks(Long userId) throws RemoteException {
+	public Collection<Task> getAllUserTasks(Long userId) {
 		taskContainer.getTaskLock().lock();
 		Collection<Task> tasksList = null;
 		try {
@@ -316,8 +320,7 @@ public class TRMServer extends UnicastRemoteObject implements ClientServerRemote
 			}
 		}
 		catch (Throwable e) {
-			e.printStackTrace();
-			throw new RemoteException(e.getMessage());
+			throw runtimeException(e);
 		}
 		finally {
 			taskContainer.getTaskLock().unlock();
@@ -326,7 +329,7 @@ public class TRMServer extends UnicastRemoteObject implements ClientServerRemote
 	}
 
 	@Override
-	public Task getTask(Long taskId) throws RemoteException {
+	public Task getTask(Long taskId) {
 		taskContainer.getTaskLock().lock();
 		Task task = null;
 		try {
@@ -336,7 +339,7 @@ public class TRMServer extends UnicastRemoteObject implements ClientServerRemote
 			}
 		}
 		catch (Exception e) {
-			throw new RemoteException(e.getMessage());
+			throw runtimeException(e);
 		}
 		finally {
 			taskContainer.getTaskLock().unlock();
@@ -346,12 +349,12 @@ public class TRMServer extends UnicastRemoteObject implements ClientServerRemote
 	}
 
 	@Override
-	public void removeCompletedTask(Long taskId) throws RemoteException {
+	public void removeCompletedTask(Long taskId) {
 		taskContainer.removeCompletedTask(taskId);
 	}
 
 	@Override
-	public Collection<AgentStatus> getAgents() throws RemoteException {
+	public Collection<AgentStatus> getAgents() {
 		agentContainer.getAgentLock().lock();
 		Collection<AgentStatus> agentList = null;
 		try {
@@ -366,7 +369,7 @@ public class TRMServer extends UnicastRemoteObject implements ClientServerRemote
 
 		}
 		catch (Exception e) {
-			throw new RemoteException(e.getMessage());
+			throw runtimeException(e);
 		}
 		finally {
 			agentContainer.getAgentLock().unlock();
@@ -419,8 +422,6 @@ public class TRMServer extends UnicastRemoteObject implements ClientServerRemote
 	public static void main(String[] args) throws Exception {
 		TRMServer server = new TRMServer();
 		
-		System.setProperty("java.security.policy", GridUtils.getMandatoryResourceFile(TRMServer.class, "/server_security.policy"));
-
 		/*
 		 * Loading properties file
 		 */
@@ -436,30 +437,25 @@ public class TRMServer extends UnicastRemoteObject implements ClientServerRemote
 		else
 			server.setStoreCompletedTasksTime(Long.parseLong(strStoreCompletedTasksTime));
 
-		/*
-		 * Detecting the server host
-		 */
-		String host;
-		String hostProperty = properties.getProperty("server.host");
-		if (hostProperty != null && !hostProperty.isEmpty()) {
-			host = hostProperty;
+		server.logger.info("Creating server on port: " + port);
+		
+		
+		String serverName = properties.getProperty("server.name");
+		if(serverName==null || serverName.isEmpty()) {
+		    throw new Exception("Name of server is not specified");
 		}
-		else {
-			server.logger.info("Detecting IP address");
-			InetAddress inetAddress = InetAddress.getLocalHost();
-			host = inetAddress.getHostAddress();
-		}
-		server.logger.info("Host: " + host);
-		server.logger.info("Creating registry on port: " + port);
-		Registry registry = LocateRegistry.createRegistry(port);
-
-		String bindName = "rmi://" + host + "/" + properties.getProperty("server.name");
-		server.logger.info("Binding on " + bindName);
-		registry.rebind(bindName, server);
-
+		
+		
+		Registry registry = new Registry();
+        registry.addLanguageHandler(Client.LANGUAGE_JSON, new DefaultJsonLanguageHandler());
+        registry.addLanguageHandler(Client.LANGUAGE_BINARY, new DefaultJsonLanguageHandler());
+        registry.setDefaultLanguage(Client.LANGUAGE_JSON);
+        registry.addObject(serverName, server);
+        registry.setPort(port);
+        
 		server.logger.info("Starting server");
 		server.handle(properties);
-		
+		registry.start();
 	}
 
 	public void quit() {
@@ -477,7 +473,7 @@ public class TRMServer extends UnicastRemoteObject implements ClientServerRemote
 	}
 
 	@Override
-	public ServerAgentRemoteInterface getAgent(Long id) throws RemoteException {
+	public ServerAgentRemoteInterface getAgent(Long id) {
 		logger.info("Searching for agent: " + id);
 		agentContainer.getAgentLock().lock();
 		AgentWrapper agentWrapper = agentContainer.getAgents().get(id);

@@ -1,7 +1,6 @@
 package net.mindengine.oculus.grid.service;
 
 import java.rmi.Remote;
-import java.rmi.RemoteException;
 import java.util.Collection;
 
 import net.mindengine.oculus.grid.domain.agent.AgentStatus;
@@ -94,17 +93,15 @@ public interface ClientServerRemoteInterface extends Remote {
 	 * Returns list of all tasks
 	 * 
 	 * @return List of all tasks
-	 * @throws RemoteException
 	 */
-	public Collection<Task> getTasksList() throws RemoteException;
+	public Collection<Task> getTasksList();
 
 	/**
 	 * Returns the information about agents.
 	 * 
 	 * @return The list of agents
-	 * @throws RemoteException
 	 */
-	public Collection<AgentStatus> getAgents() throws RemoteException;
+	public Collection<AgentStatus> getAgents();
 
 	/**
 	 * Searches for all user tasks in TRMServer.
@@ -112,9 +109,8 @@ public interface ClientServerRemoteInterface extends Remote {
 	 * @param userId
 	 *            Id of the user
 	 * @return Statuses of the tasks which belongs to the specified user
-	 * @throws RemoteException
 	 */
-	public Collection<Task> getAllUserTasks(Long userId) throws RemoteException;
+	public Collection<Task> getAllUserTasks(Long userId);
 
 	/**
 	 * Returns the task by its id
@@ -122,18 +118,16 @@ public interface ClientServerRemoteInterface extends Remote {
 	 * @param taskId
 	 *            Id of the task
 	 * @return
-	 * @throws RemoteException
 	 */
-	public Task getTask(Long taskId) throws RemoteException;
+	public Task getTask(Long taskId);
 
 	/**
 	 * Removes completed task from server
 	 * 
 	 * @param taskId
 	 *            Id of the completed task
-	 * @throws RemoteException
 	 */
-	public void removeCompletedTask(Long taskId) throws RemoteException;
+	public void removeCompletedTask(Long taskId);
 
 	/**
 	 * Returns remote instance to the TRMAgent
@@ -141,9 +135,8 @@ public interface ClientServerRemoteInterface extends Remote {
 	 * @param id
 	 *            Id of the registered agent on server
 	 * @return
-	 * @throws RemoteException
 	 */
-	public ServerAgentRemoteInterface getAgent(Long id) throws RemoteException;
+	public ServerAgentRemoteInterface getAgent(Long id);
 
 	/**
 	 * Upload project to server
