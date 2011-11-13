@@ -53,7 +53,7 @@ public class TaskContainer {
 
 	/**
 	 * Moves task to completed queue. In case if the task is a child of some
-	 * {@link MultiTask} and is the last active task in it its parent will be
+	 * {@link DefaultTask} and is the last active task in it its parent will be
 	 * also moved to completed list
 	 * 
 	 * @param taskWrapper
@@ -87,8 +87,8 @@ public class TaskContainer {
 		taskWrapper.setAssignedAgent(null);
 		taskWrapper.getTask().setCompletedDate(new Date());
 		
-		MultiTask parent = task.getParent();
-		if (task.getParent() != null) {
+		MultiTask parent = task.parent();
+		if (task.parent() != null) {
 			updateMultiTaskStatus(parent);
 		}
 	}
@@ -124,7 +124,7 @@ public class TaskContainer {
 
 	/**
 	 * Registers the task in container and puts it to the tasks queue if it is
-	 * not a {@link MultiTask}. In case if is {@link MultiTask} - all the child
+	 * not a {@link DefaultTask}. In case if is {@link DefaultTask} - all the child
 	 * tasks will be also registered and put to tasks queue
 	 * 
 	 * @param taskWrapper
@@ -159,7 +159,7 @@ public class TaskContainer {
 				 * received as null. If we don't do it here - later we will have
 				 * Exception in TRMServer.getAllUserTasks method
 				 */
-				childTask.setParent(multiTask);
+				childTask.parent(multiTask);
 
 				TaskWrapper childTaskWrapper = new TaskWrapper();
 				childTaskWrapper.setTask(childTask);
@@ -219,7 +219,7 @@ public class TaskContainer {
 		if (completedTasks.containsKey(id)) {
 			TaskWrapper taskWrapper = tasks.get(id);
 			if (taskWrapper.getTask() instanceof MultiTask) {
-				MultiTask multiTask = (MultiTask) taskWrapper.getTask();
+			    MultiTask multiTask = (MultiTask) taskWrapper.getTask();
 				for (Task task : multiTask.getTasks()) {
 					removeCompletedTaskWithoutLock(task.getId());
 				}

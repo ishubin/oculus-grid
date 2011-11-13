@@ -1,6 +1,6 @@
-package net.mindengine.oculus.grid.domain.task.suite;
+package net.mindengine.oculus.grid.domain.task;
 
-import net.mindengine.oculus.grid.domain.task.Task;
+import net.mindengine.oculus.experior.suite.Suite;
 
 /**
  * Used for running automation suite on agents
@@ -10,7 +10,7 @@ import net.mindengine.oculus.grid.domain.task.Task;
  */
 public class SuiteTask extends Task {
 	private static final long serialVersionUID = -7426044556438608794L;
-	private SuiteWrapper suite;
+	private Suite suite;
 
 	/**
 	 * The name of automation project.
@@ -22,11 +22,11 @@ public class SuiteTask extends Task {
 	 */
 	private String projectVersion;
 
-	public void setSuite(SuiteWrapper suite) {
+	public void setSuite(Suite suite) {
 		this.suite = suite;
 	}
 
-	public SuiteWrapper getSuite() {
+	public Suite getSuite() {
 		return suite;
 	}
 
@@ -49,6 +49,11 @@ public class SuiteTask extends Task {
 	@Override
 	public String toString() {
 		return super.toString() + ", suite = {" + suite + "}";
+	}
+	
+	@Override
+	public String type() {
+	    return Task.TYPE_SUITETASK;
 	}
 
 }

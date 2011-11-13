@@ -3,9 +3,9 @@ package net.mindengine.oculus.grid.agent.taskrunner;
 import java.util.Properties;
 
 import net.mindengine.oculus.grid.agent.TRMAgent;
+import net.mindengine.oculus.grid.domain.task.SuiteTask;
 import net.mindengine.oculus.grid.domain.task.Task;
 import net.mindengine.oculus.grid.domain.task.TaskStatus;
-import net.mindengine.oculus.grid.domain.task.suite.SuiteTask;
 import net.mindengine.oculus.grid.service.exceptions.IncorrectTaskException;
 
 /**

@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -23,9 +24,9 @@ import net.mindengine.oculus.grid.GridUtils;
 import net.mindengine.oculus.grid.agent.taskrunner.TaskRunner;
 import net.mindengine.oculus.grid.domain.agent.AgentInformation;
 import net.mindengine.oculus.grid.domain.agent.AgentStatus;
+import net.mindengine.oculus.grid.domain.task.SuiteTask;
 import net.mindengine.oculus.grid.domain.task.Task;
 import net.mindengine.oculus.grid.domain.task.TaskStatus;
-import net.mindengine.oculus.grid.domain.task.suite.SuiteTask;
 import net.mindengine.oculus.grid.service.AgentOculusRunnerRemoteInterface;
 import net.mindengine.oculus.grid.service.AgentServerRemoteInterface;
 import net.mindengine.oculus.grid.service.ServerAgentRemoteInterface;
@@ -43,7 +44,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Ivan Shubin
  * 
  */
-public class TRMAgent extends UnicastRemoteObject implements ServerAgentRemoteInterface, AgentTestRunnerListener {
+public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerListener {
 	private static final long serialVersionUID = 4670539314743293843L;
 	private Log logger = LogFactory.getLog(getClass());
 
@@ -74,13 +75,19 @@ public class TRMAgent extends UnicastRemoteObject implements ServerAgentRemoteIn
 	public void startConnection() throws Exception {
 
 		// Detecting the machines name
-		agentInformation.detectHostName();
+	    InetAddress addr = InetAddress.getLocalHost();
+
+	    String hostname = addr.getHostName();
+	    agentInformation.setUri("http://"+hostname);
+	    
 		agentInformation.setName(properties.getProperty("agent.name"));
+		agentInformation.setRemoteName(properties.getProperty("agent.remoteName"));
 		agentInformation.setDescription(properties.getProperty("agent.description"));
+		agentInformation.setPort(Integer.parseInt(properties.getProperty("agent.port")));
 
 		logger.info("Starting agent: " + agentInformation);
 
-		id = server.registerAgent(agentInformation, this);
+		id = server.registerAgent(agentInformation);
 		logger.info("Registered on server with id = " + id);
 	}
 
@@ -145,7 +152,7 @@ public class TRMAgent extends UnicastRemoteObject implements ServerAgentRemoteIn
 		if (task instanceof SuiteTask) {
 			SuiteTask suiteTask = (SuiteTask) task;
 
-			suiteTask.getSuite().getSuite().setAgentName(agentInformation.getName());
+			suiteTask.getSuite().setAgentName(agentInformation.getName());
 		}
 		// The agent properties will be needed for launching the Process in
 		// SuiteTaskRunner
@@ -197,7 +204,7 @@ public class TRMAgent extends UnicastRemoteObject implements ServerAgentRemoteIn
 		taskStatus.getCompletedTests().add(name);
 		if (task instanceof SuiteTask) {
 			SuiteTask suiteTask = (SuiteTask) task;
-			int testsAmount = suiteTask.getSuite().getSuite().getTestsMap().size();
+			int testsAmount = suiteTask.getSuite().getTestsMap().size();
 			if (testsAmount > 0) {
 				taskStatus.setPercent((taskStatus.getCompletedTests().size() * 100) / testsAmount);
 			}
@@ -299,6 +306,7 @@ public class TRMAgent extends UnicastRemoteObject implements ServerAgentRemoteIn
 	 * @throws Exception
 	 */
 	public void reconnect() throws Exception {
+	    //TODO change this to jeremy
 		String serverAddress = "rmi://" + properties.getProperty("server.host") + "/" + properties.getProperty("server.name");
 		logger.info("Connecting to " + serverAddress);
 
@@ -309,6 +317,7 @@ public class TRMAgent extends UnicastRemoteObject implements ServerAgentRemoteIn
 	}
 
 	public static void main(String[] args) throws Exception {
+	    //TODO change to jeremy
 		Log logger = LogFactory.getLog("");
 		Properties properties = new Properties();
 		properties.load(new FileReader(new File(GridUtils.getMandatoryResourceFile(TRMAgent.class, "/agent.properties"))));

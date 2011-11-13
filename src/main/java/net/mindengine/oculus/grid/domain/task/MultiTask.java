@@ -84,4 +84,9 @@ public class MultiTask extends Task {
 		getTaskStatus().setSuiteIds(suiteIds);
 	}
 
+    @Override
+    public String type() {
+        return Task.TYPE_MULTITASK;
+    }
+
 }

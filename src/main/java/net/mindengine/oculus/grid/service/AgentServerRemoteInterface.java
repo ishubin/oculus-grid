@@ -39,7 +39,7 @@ public interface AgentServerRemoteInterface extends Remote {
 	 * @throws Exception
 	 * @return Id of the registered agent on server
 	 */
-	public Long registerAgent(AgentInformation agentInformation, ServerAgentRemoteInterface agent) throws Exception;
+	public Long registerAgent(AgentInformation agentInformation) throws Exception;
 
 	/**
 	 * Used to check the connection with TRMServer

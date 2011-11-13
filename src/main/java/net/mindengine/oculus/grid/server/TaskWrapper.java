@@ -1,10 +1,12 @@
 package net.mindengine.oculus.grid.server;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 import net.mindengine.oculus.grid.domain.task.MultiTask;
 import net.mindengine.oculus.grid.domain.task.Task;
+import net.mindengine.oculus.grid.domain.task.TaskInformation;
 
 /**
  * Used in TaskContainer for simple access to all kind of tasks
@@ -72,6 +74,25 @@ public class TaskWrapper {
 
 	public List<TaskWrapper> getChildren() {
 		return children;
+	}
+	
+	public TaskInformation getTaskInformation() {
+	    TaskInformation info = new TaskInformation();
+	    info.setTaskName(getTask().getName());
+	    info.setTaskId(getTask().getId());
+	    info.setTaskStatus(getTask().getTaskStatus());
+	    info.setTaskUser(getTask().getTaskUser());
+	    info.setType(getTask().type());
+	    
+	    if(children!=null) {
+	        List<TaskInformation> childInfos = new LinkedList<TaskInformation>();
+	        info.setChildTasks(childInfos);
+	        
+	        for(TaskWrapper tw: children) {
+	            childInfos.add(tw.getTaskInformation());
+	        }
+	    }
+	    return info;
 	}
 
 	@Override

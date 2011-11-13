@@ -3,10 +3,14 @@ package net.mindengine.oculus.grid.domain.task;
 import java.io.Serializable;
 import java.util.Date;
 
-import net.mindengine.oculus.grid.domain.task.schedule.ScheduleOccurrence;
 
 public abstract class Task implements Serializable {
 	private static final long serialVersionUID = -347244634673235L;
+	
+	public final static String TYPE_MULTITASK = "multitask".intern();
+	public final static String TYPE_DEFAULTTASK = "default".intern();
+	public final static String TYPE_SUITETASK = "suitetask".intern();
+	
 	private Long id;
 	private String name;
 	private TaskUser taskUser;
@@ -14,14 +18,15 @@ public abstract class Task implements Serializable {
 	private Date createdDate = new Date();
 	private Date startedDate;
 	private Date completedDate;
-	/**
-	 * The occurrence which is used by the scheduler to identify if the task
-	 * matches the the current date and time
-	 */
-	private ScheduleOccurrence scheduleOccurrence;
 	
 	private transient MultiTask parent;
+	
 
+
+	
+	public abstract String type();
+	
+	
 	/**
 	 * The list of preferable agent names where the task should be run.
 	 */
@@ -60,11 +65,11 @@ public abstract class Task implements Serializable {
 		return id;
 	}
 
-	public void setParent(MultiTask parent) {
+	public void parent(MultiTask parent) {
 		this.parent = parent;
 	}
 
-	public MultiTask getParent() {
+	public MultiTask parent() {
 		return parent;
 	}
 
@@ -111,12 +116,4 @@ public abstract class Task implements Serializable {
 		return completedDate;
 	}
 
-	public void setScheduleOccurrence(ScheduleOccurrence scheduleOccurrence) {
-	    this.scheduleOccurrence = scheduleOccurrence;
-    }
-
-	public ScheduleOccurrence getScheduleOccurrence() {
-	    return scheduleOccurrence;
-    }
-	
 }

@@ -1,8 +1,6 @@
 package net.mindengine.oculus.grid.domain.agent;
 
 import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 /**
  * Contains all information about agent. All the agent information is filled on
@@ -15,8 +13,13 @@ public class AgentInformation implements Serializable {
 	private static final long serialVersionUID = 4788131383871097120L;
 
 	private String name;
-	private String hostName;
+	/**
+	 * Remote URI on which the agent can be accessed
+	 */
+	private String uri;
+	private String remoteName;
 	private String description;
+	private Integer port;
 
 	public String getDescription() {
 		return description;
@@ -34,21 +37,34 @@ public class AgentInformation implements Serializable {
 		this.name = name;
 	}
 
-	public String getHostName() {
-		return hostName;
-	}
-
-	public void setHostName(String hostName) {
-		this.hostName = hostName;
-	}
-
-	public void detectHostName() throws UnknownHostException {
-		InetAddress inetAddress = InetAddress.getLocalHost();
-		hostName = inetAddress.getHostName();
-	}
+	
 
 	@Override
 	public String toString() {
-		return "name=" + name + ", hostName=" + hostName;
+		return "name=" + name + ", uri=" + uri;
 	}
+
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
+
+    public String getUri() {
+        return uri;
+    }
+
+    public void setRemoteName(String remoteName) {
+        this.remoteName = remoteName;
+    }
+
+    public String getRemoteName() {
+        return remoteName;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
+    }
+
+    public Integer getPort() {
+        return port;
+    }
 }

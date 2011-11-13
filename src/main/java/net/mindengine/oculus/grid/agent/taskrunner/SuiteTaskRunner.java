@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.Random;
 
 import net.mindengine.oculus.experior.suite.XmlSuiteParser;
-import net.mindengine.oculus.grid.domain.task.suite.SuiteTask;
+import net.mindengine.oculus.grid.domain.task.SuiteTask;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -94,7 +94,7 @@ public class SuiteTaskRunner extends TaskRunner {
 			}
 			
 			logger.info("Saving suite to " + file.getAbsolutePath());
-			XmlSuiteParser.saveSuite(task.getSuite().getSuite(), file);
+			XmlSuiteParser.saveSuite(task.getSuite(), file);
 
 			String processCommand = "java -classpath " + oculusLibraryPath + File.separator + "*" + jSeparator + currentProjectDir + File.separator + "libs" + File.separator + "*" + jSeparator + currentProjectDir + File.separator + "*" + " " + oculusRunnerClasspath + " " + getAgentProperties().getProperty("server.host") + " " + getAgentProperties().getProperty("server.port") + " " + getAgentProperties().getProperty("server.name") + " " + getAgent().getId() + " " + suiteFileName;
 
