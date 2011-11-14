@@ -2,6 +2,14 @@ package net.mindengine.oculus.grid;
 
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+
+import net.mindengine.jeremy.client.Client;
+import net.mindengine.jeremy.messaging.LanguageHandler;
+import net.mindengine.jeremy.messaging.binary.DefaultBinaryLanguageHandler;
+import net.mindengine.jeremy.messaging.json.DefaultJsonLanguageHandler;
+import net.mindengine.jeremy.registry.Lookup;
 
 public class GridUtils {
     
@@ -15,6 +23,17 @@ public class GridUtils {
             throw new FileNotFoundException("Cannot find file "+resource);
         }
         return url;
+    }
+    
+    public static Lookup createDefaultLookup() {
+        Lookup lookup = new Lookup();
+        lookup.setClient(new Client());
+        lookup.setDefaultLanguage(Client.LANGUAGE_JSON);
+        Map<String, LanguageHandler> languageHandlers = new HashMap<String, LanguageHandler>();
+        languageHandlers.put(Client.LANGUAGE_BINARY, new DefaultBinaryLanguageHandler());
+        languageHandlers.put(Client.LANGUAGE_JSON, new DefaultJsonLanguageHandler());
+        lookup.setLanguageHandlers(languageHandlers);
+        return lookup;
     }
 
 }

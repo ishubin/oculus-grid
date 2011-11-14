@@ -1,9 +1,5 @@
 package net.mindengine.oculus.grid.runner;
 
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
-import java.util.Date;
-
 import net.mindengine.oculus.experior.test.TestLauncher;
 
 /**
@@ -20,26 +16,24 @@ public class DefaultOculusRunner extends OculusRunner {
      */
 	private static final long serialVersionUID = 1141848202782406169L;
 
-	public DefaultOculusRunner() throws RemoteException {
-		setName("DefaultOculusRunner_" + (new Date()).getTime());
-	}
 
 	public static void main(String[] args) throws Exception {
 		OculusRunner oculusRunner = new DefaultOculusRunner();
-		try {
-			oculusRunner.start(args);
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		finally {
-			UnicastRemoteObject.unexportObject(oculusRunner, false);
-			System.exit(0);
-		}
+	    String agentHost = args[0];
+        Integer agentPort = Integer.parseInt(args[1]);
+        String agentName = args[2];
+        String suitePath = null;
+        if (args.length > 4) {
+            suitePath = args[4];
+        }
+        else {
+            suitePath = "suite.xml";
+        }
+		oculusRunner.start(agentHost, agentPort, agentName, suitePath);
 	}
 
 	@Override
-	public void run() throws RemoteException {
+	public void run()  {
 		System.setErr(System.out);
 		try {
 			TestLauncher testLauncher = new TestLauncher();

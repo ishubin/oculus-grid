@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+import net.mindengine.jeremy.bin.RemoteFile;
 import net.mindengine.oculus.grid.service.ClientServerRemoteInterface;
 
 public class TRMProjectUpload {
@@ -25,7 +26,10 @@ public class TRMProjectUpload {
 		input.read(buffer, 0, buffer.length);
 		input.close();
 
-		server.uploadProject(projectName, projectVersion, buffer);
+		RemoteFile remoteFile = new RemoteFile();
+		remoteFile.setBytes(buffer);
+		remoteFile.setName(file.getName());
+		server.uploadProject(projectName, projectVersion, remoteFile);
 	}
 
 	public static void main(String[] args) throws Exception {

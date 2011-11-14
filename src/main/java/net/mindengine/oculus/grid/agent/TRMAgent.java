@@ -7,10 +7,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -20,6 +16,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import net.mindengine.jeremy.bin.RemoteFile;
+import net.mindengine.jeremy.registry.Lookup;
 import net.mindengine.oculus.grid.GridUtils;
 import net.mindengine.oculus.grid.agent.taskrunner.TaskRunner;
 import net.mindengine.oculus.grid.domain.agent.AgentInformation;
@@ -27,7 +25,6 @@ import net.mindengine.oculus.grid.domain.agent.AgentStatus;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
 import net.mindengine.oculus.grid.domain.task.Task;
 import net.mindengine.oculus.grid.domain.task.TaskStatus;
-import net.mindengine.oculus.grid.service.AgentOculusRunnerRemoteInterface;
 import net.mindengine.oculus.grid.service.AgentServerRemoteInterface;
 import net.mindengine.oculus.grid.service.ServerAgentRemoteInterface;
 
@@ -50,7 +47,7 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 
 	private AgentInformation agentInformation = new AgentInformation();
 	private AgentServerRemoteInterface server;
-	private AgentOculusRunnerRemoteInterface oculusRunnerRemoteInterface = null;
+	
 	private Properties properties;
 
 	private AgentConnectionChecker agentConnectionChecker = new AgentConnectionChecker();
@@ -62,11 +59,17 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 	private Collection<UploadProjectData> uploadProjects = new LinkedList<UploadProjectData>();
 
 	/**
+	 * Flag which is used by the oculus-runner in order to check if it should proceed running all next tests
+	 */
+	private volatile Boolean shouldCurrentTaskProceed = true;
+	
+	/**
 	 * Abstract task runner which will be instantiated with each new task
 	 */
 	private TaskRunner taskRunner;
+	private Lookup lookup;
 
-	protected TRMAgent(AgentServerRemoteInterface server, Properties properties) throws RemoteException {
+	protected TRMAgent(AgentServerRemoteInterface server, Properties properties) {
 		super();
 		this.server = server;
 		this.properties = properties;
@@ -106,8 +109,7 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 	}
 
 	@Override
-	public void stopAgent() throws RemoteException {
-		UnicastRemoteObject.unexportObject(this, false);
+	public void killAgent() {
 		System.exit(0);
 	}
 
@@ -134,7 +136,10 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 	}
 
 	@Override
-	public void runTask(Task task) throws Exception {
+	public void runSuiteTask(SuiteTask task) throws Exception {
+	    
+	    shouldCurrentTaskProceed = true;
+	    
 		/*
 		 * Checking if there are any projects that should be uploaded. Doing
 		 * this here because for now it is the only safe place to upload
@@ -161,11 +166,13 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 	}
 
 	@Override
-	public void stopTask() throws RemoteException {
-		if (oculusRunnerRemoteInterface != null) {
-			logger.info("Stoping current task");
-			oculusRunnerRemoteInterface.stopSuite();
-		}
+	public void stopCurrentTask() {
+		shouldCurrentTaskProceed = false;
+	}
+	
+	@Override
+	public Boolean shouldProceed() {
+	    return shouldCurrentTaskProceed;
 	}
 
 	public void setProperties(Properties properties) {
@@ -223,7 +230,7 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 	}
 
 	@Override
-	public void onTaskFinished(Long suiteId) throws RemoteException {
+	public void onTaskFinished(Long suiteId) {
 		logger.info("Task is finished");
 		taskStatus.setStatus(TaskStatus.COMPLETED);
 		taskStatus.setPercent(100);
@@ -236,11 +243,6 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 		}
 		task = null;
 
-	}
-
-	@Override
-	public void setOculusRunner(AgentOculusRunnerRemoteInterface oculusRunnerRemoteInterface) throws RemoteException {
-		this.oculusRunnerRemoteInterface = oculusRunnerRemoteInterface;
 	}
 
 	public Long getId() {
@@ -306,19 +308,15 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 	 * @throws Exception
 	 */
 	public void reconnect() throws Exception {
-	    //TODO change this to jeremy
-		String serverAddress = "rmi://" + properties.getProperty("server.host") + "/" + properties.getProperty("server.name");
-		logger.info("Connecting to " + serverAddress);
-
-		Registry registry = LocateRegistry.getRegistry(properties.getProperty("server.host"), Integer.parseInt(properties.getProperty("server.port")));
-		this.server = (AgentServerRemoteInterface) registry.lookup(serverAddress);
-
+	    String serverName =  properties.getProperty("server.name");
+		logger.info("Connecting to " + serverName);
+		
+		this.server = lookup.getRemoteObject(serverName, AgentServerRemoteInterface.class);
 		startConnection();
 	}
 
 	public static void main(String[] args) throws Exception {
-	    //TODO change to jeremy
-		Log logger = LogFactory.getLog("");
+		Log logger = LogFactory.getLog(TRMAgent.class);
 		Properties properties = new Properties();
 		properties.load(new FileReader(new File(GridUtils.getMandatoryResourceFile(TRMAgent.class, "/agent.properties"))));
 
@@ -326,30 +324,22 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 		verifyResource(properties, "agent.projects.library");
 		verifyOculusLibrary(properties);
 
-		String serverAddress = "rmi://" + properties.getProperty("server.host") + "/" + properties.getProperty("server.name");
-
-		System.setProperty("java.security.policy", GridUtils.getMandatoryResourceFile(TRMAgent.class, "/agent_security.policy"));
+		String serverName = properties.getProperty("server.name");
 
 		TRMAgent agent = null;
 
-		try {
-			logger.info("Connecting to " + serverAddress);
+		Lookup lookup = GridUtils.createDefaultLookup();
+		lookup.setUrl("http://"+properties.getProperty("server.host")+":"+properties.getProperty("server.port"));
+		
+		AgentServerRemoteInterface server = (AgentServerRemoteInterface) lookup.getRemoteObject(serverName, AgentServerRemoteInterface.class);
+		agent = new TRMAgent(server, properties);
 
-			Registry registry = LocateRegistry.getRegistry(properties.getProperty("server.host"), Integer.parseInt(properties.getProperty("server.port")));
-			AgentServerRemoteInterface server = (AgentServerRemoteInterface) registry.lookup(serverAddress);
-			agent = new TRMAgent(server, properties);
-
-			agent.startConnection();
-			agent.agentConnectionChecker.setAgent(agent);
-			agent.agentConnectionChecker.start();
-			logger.info("Registered in " + properties.getProperty("server.name"));
-		}
-		catch (Exception e) {
-			if (agent != null) {
-				UnicastRemoteObject.unexportObject(agent, false);
-			}
-			throw e;
-		}
+		agent.lookup = lookup;
+		agent.startConnection();
+		agent.agentConnectionChecker.setAgent(agent);
+		agent.agentConnectionChecker.start();
+		logger.info("Registered in " + properties.getProperty("server.name"));
+		
 	}
 
 	public void uploadProjectToSystem(UploadProjectData upd) throws Exception {
@@ -371,7 +361,7 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 	}
 
 	@Override
-	public void uploadProject(String projectPath, String version, byte[] zippedContent) throws Exception {
+	public void uploadProject(String projectPath, String version, RemoteFile file) throws Exception {
 		/*
 		 * First will have to check that the agent is not running right now.
 		 * Only when the agent is free - it is possible to upload project.
@@ -379,7 +369,7 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 		logger.info("Received project content: " + projectPath + " version: " + version);
 		UploadProjectData upd = new UploadProjectData(projectPath, version);
 
-		saveZip("temp_" + upd.getPath() + "_" + upd.getVersion() + ".zip", zippedContent);
+		saveZip("temp_" + upd.getPath() + "_" + upd.getVersion() + ".zip", file.getBytes());
 
 		if (getAgentStatus().getState() == AgentStatus.FREE) {
 			uploadProjectToSystem(upd);

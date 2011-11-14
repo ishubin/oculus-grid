@@ -1,10 +1,8 @@
 package net.mindengine.oculus.grid.agent;
 
 import java.rmi.Remote;
-import java.rmi.RemoteException;
 
 import net.mindengine.oculus.grid.runner.OculusRunner;
-import net.mindengine.oculus.grid.service.AgentOculusRunnerRemoteInterface;
 
 /**
  * Used in {@link TRMAgent} for handling all the events from
@@ -14,8 +12,13 @@ import net.mindengine.oculus.grid.service.AgentOculusRunnerRemoteInterface;
  * 
  */
 public interface AgentTestRunnerListener extends Remote {
-	public void setOculusRunner(AgentOculusRunnerRemoteInterface oculusRunnerRemoteInterface) throws RemoteException;
-
+    
+    /**
+     * Used to check if the test suite need to be interrupted.
+     * @return false in case if test should be interrupted, true - if it can proceed
+     */
+    public Boolean shouldProceed();
+    
 	public void onTestStarted(String name, Long id) throws Exception;
 
 	/**
@@ -27,9 +30,9 @@ public interface AgentTestRunnerListener extends Remote {
 	 *            Percents of test actions done
 	 * @throws Exception
 	 */
-	public void onTestAction(String name, Integer percent) throws RemoteException;
+	public void onTestAction(String name, Integer percent);
 
-	public void onTestFinished(String name, Long id, Integer status) throws RemoteException;
+	public void onTestFinished(String name, Long id, Integer status);
 
 	/**
 	 * 
@@ -37,5 +40,5 @@ public interface AgentTestRunnerListener extends Remote {
 	 *            Id of the suite in DB
 	 * @throws RemoteException
 	 */
-	public void onTaskFinished(Long suiteId) throws RemoteException;
+	public void onTaskFinished(Long suiteId);
 }

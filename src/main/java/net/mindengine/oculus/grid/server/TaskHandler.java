@@ -2,6 +2,7 @@ package net.mindengine.oculus.grid.server;
 
 import java.util.Date;
 
+import net.mindengine.oculus.grid.domain.task.SuiteTask;
 import net.mindengine.oculus.grid.domain.task.TaskStatus;
 
 /**
@@ -35,6 +36,7 @@ public class TaskHandler extends Thread {
 				try {
 					if (taskContainer.hasQueuedTasks()) {
 						for (TaskWrapper task : taskContainer.getQueuedTasks()) {
+						    
 							AgentWrapper agent = agentContainer.fetchAgentWrapper(task.getTask().getAgentNames());
 							if (agent != null) {
 								try {
@@ -66,19 +68,21 @@ public class TaskHandler extends Thread {
 	}
 
 	private void assignTaskToAgent(TaskWrapper task, AgentWrapper agent) throws Exception {
-		agent.getAgentRemoteInterface().runTask(task.getTask());
-		agent.setStatus(AgentWrapper.BUSY);
-		agent.setAssignedTask(task);
-		taskContainer.getQueuedTasks().remove(task);
-		taskContainer.getAssignedTasks().put(task.getId(), task);
-		agentContainer.getFreeAgents().remove(agent.getAgentId());
-		task.setState(TaskWrapper.ASSIGNED);
-		task.setAssignedAgent(agent);
-
-		task.getTask().setStartedDate(new Date());
-		task.getTask().getTaskStatus().setStatus(TaskStatus.ACTIVE);
-		task.getTask().getTaskStatus().setAssignedAgent(agent.getAgentInformation());
-		trmServer.updateTaskStatus(task.getId(), task.getTask().getTaskStatus());
+	    if(task.getTask() instanceof SuiteTask) {
+    		agent.getAgentRemoteInterface().runSuiteTask((SuiteTask)task.getTask());
+    		agent.setStatus(AgentWrapper.BUSY);
+    		agent.setAssignedTask(task);
+    		taskContainer.getQueuedTasks().remove(task);
+    		taskContainer.getAssignedTasks().put(task.getId(), task);
+    		agentContainer.getFreeAgents().remove(agent.getAgentId());
+    		task.setState(TaskWrapper.ASSIGNED);
+    		task.setAssignedAgent(agent);
+    
+    		task.getTask().setStartedDate(new Date());
+    		task.getTask().getTaskStatus().setStatus(TaskStatus.ACTIVE);
+    		task.getTask().getTaskStatus().setAssignedAgent(agent.getAgentInformation());
+    		trmServer.updateTaskStatus(task.getId(), task.getTask().getTaskStatus());
+	    }
 	}
 
 	public TaskContainer getTaskContainer() {

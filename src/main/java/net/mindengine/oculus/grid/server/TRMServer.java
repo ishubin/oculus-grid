@@ -4,15 +4,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
+import net.mindengine.jeremy.bin.RemoteFile;
 import net.mindengine.jeremy.client.Client;
-import net.mindengine.jeremy.messaging.LanguageHandler;
-import net.mindengine.jeremy.messaging.binary.DefaultBinaryLanguageHandler;
 import net.mindengine.jeremy.messaging.json.DefaultJsonLanguageHandler;
 import net.mindengine.jeremy.registry.Lookup;
 import net.mindengine.jeremy.registry.Registry;
@@ -124,7 +121,7 @@ public class TRMServer implements ClientServerRemoteInterface, AgentServerRemote
 	}
 
 	/**
-	 * Stops all tasks. Moves all queued tasks to completed list.
+	 * Stops all tasks within specified task. Moves all queued tasks to completed list.
 	 * 
 	 * @param task
 	 * @throws Exception
@@ -147,7 +144,7 @@ public class TRMServer implements ClientServerRemoteInterface, AgentServerRemote
 			else {
 				AgentWrapper agent = task.getAssignedAgent();
 				if (agent != null) {
-					agent.getAgentRemoteInterface().stopTask();
+					agent.getAgentRemoteInterface().stopCurrentTask();
 				}
 			}
 		}
@@ -275,14 +272,7 @@ public class TRMServer implements ClientServerRemoteInterface, AgentServerRemote
 	
 	@Override
 	public Long registerAgent(AgentInformation agentInformation) throws Exception {
-	    //TODO lookup for remote agent
-	    Lookup lookup = new Lookup();
-        lookup.setClient(new Client());
-        lookup.setDefaultLanguage(Client.LANGUAGE_JSON);
-        Map<String, LanguageHandler> languageHandlers = new HashMap<String, LanguageHandler>();
-        languageHandlers.put(Client.LANGUAGE_BINARY, new DefaultBinaryLanguageHandler());
-        languageHandlers.put(Client.LANGUAGE_JSON, new DefaultJsonLanguageHandler());
-        lookup.setLanguageHandlers(languageHandlers);
+	    Lookup lookup = GridUtils.createDefaultLookup();
         
         lookup.setUrl(agentInformation.getUri());
         ServerAgentRemoteInterface agentRemoteInterface = lookup.getRemoteObject(agentInformation.getRemoteName(), ServerAgentRemoteInterface.class);
@@ -395,10 +385,10 @@ public class TRMServer implements ClientServerRemoteInterface, AgentServerRemote
 	}
 
 	@Override
-	public void uploadProject(String projectPath, String version, byte[] zippedContent) throws Exception {
+	public void uploadProject(String projectPath, String version, RemoteFile file) throws Exception {
 		List<AgentWrapper> agentList = new LinkedList<AgentWrapper>();
 		/*
-		 * Collecting agent to another list to avoid thread problems
+		 * Collecting agent to another list in order to avoid thread problems
 		 */
 		agentContainer.getAgentLock().lock();
 		for (AgentWrapper agetWrapper : agentContainer.getAgents().values()) {
@@ -410,7 +400,12 @@ public class TRMServer implements ClientServerRemoteInterface, AgentServerRemote
 		 * Uploading the project to each agent
 		 */
 		for (AgentWrapper agentWrapper : agentList) {
-			agentWrapper.getAgentRemoteInterface().uploadProject(projectPath, version, zippedContent);
+		    try {
+		        agentWrapper.getAgentRemoteInterface().uploadProject(projectPath, version, file);
+		    }
+		    catch (Exception e) {
+                e.printStackTrace();
+            }
 		}
 	}
 
@@ -426,4 +421,10 @@ public class TRMServer implements ClientServerRemoteInterface, AgentServerRemote
 	public Long getStoreCompletedTasksTime() {
 		return storeCompletedTasksTime;
 	}
+	
+	//TODO implement versioning for projects. So when the agent has to execute task for project which it doesn't have - it download all needed data 
+	/*
+	 * As users could update same versions of project - we need to implement some kind of custom generated keys which will identify the projects. 
+	 * If agent has a key other than a server - it will download whole project from server and only after will start executing task  
+	 */
 }

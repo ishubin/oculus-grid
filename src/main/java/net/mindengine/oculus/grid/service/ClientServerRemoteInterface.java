@@ -3,6 +3,7 @@ package net.mindengine.oculus.grid.service;
 import java.rmi.Remote;
 import java.util.Collection;
 
+import net.mindengine.jeremy.bin.RemoteFile;
 import net.mindengine.oculus.grid.domain.agent.AgentInformation;
 import net.mindengine.oculus.grid.domain.agent.AgentStatus;
 import net.mindengine.oculus.grid.domain.task.DefaultTask;
@@ -105,9 +106,9 @@ public interface ClientServerRemoteInterface extends Remote {
 	 * 
 	 * @param projectPath
 	 * @param version
-	 * @param zippedContent
+	 * @param file
 	 *            the zip archive with project files
 	 * @throws Exception
 	 */
-	public void uploadProject(String projectPath, String version, byte[] zippedContent) throws Exception;
+	public void uploadProject(String projectPath, String version, RemoteFile file) throws Exception;
 }

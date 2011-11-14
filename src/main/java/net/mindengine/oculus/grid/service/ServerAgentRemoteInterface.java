@@ -2,9 +2,10 @@ package net.mindengine.oculus.grid.service;
 
 import java.rmi.Remote;
 
+import net.mindengine.jeremy.bin.RemoteFile;
 import net.mindengine.oculus.grid.agent.TRMAgent;
 import net.mindengine.oculus.grid.domain.agent.AgentStatus;
-import net.mindengine.oculus.grid.domain.task.Task;
+import net.mindengine.oculus.grid.domain.task.SuiteTask;
 import net.mindengine.oculus.grid.server.TRMServer;
 
 /**
@@ -31,21 +32,21 @@ public interface ServerAgentRemoteInterface extends Remote {
 	 *            A set of tests with tests dependency and parameters
 	 * @throws Exception
 	 */
-	public void runTask(Task task) throws Exception;
+	public void runSuiteTask(SuiteTask task) throws Exception;
 
 	/**
 	 * Stops the current task on agent
 	 * 
 	 * @throws Exception
 	 */
-	public void stopTask() throws Exception;
+	public void stopCurrentTask() throws Exception;
 
 	/**
 	 * Notifies the agent about stopping and agent will immediately exit
 	 * 
 	 * @throws Exception
 	 */
-	public void stopAgent() throws Exception;
+	public void killAgent() throws Exception;
 
 	/**
 	 * Uploads zip archive with projects content and extracts it to the projects
@@ -56,5 +57,5 @@ public interface ServerAgentRemoteInterface extends Remote {
 	 * @param zippedContent
 	 * @throws Exception
 	 */
-	public void uploadProject(String projectPath, String version, byte[] zippedContent) throws Exception;
+	public void uploadProject(String projectPath, String version, RemoteFile file) throws Exception;
 }
