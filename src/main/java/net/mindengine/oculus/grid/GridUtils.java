@@ -10,6 +10,7 @@ import net.mindengine.jeremy.messaging.LanguageHandler;
 import net.mindengine.jeremy.messaging.binary.DefaultBinaryLanguageHandler;
 import net.mindengine.jeremy.messaging.json.DefaultJsonLanguageHandler;
 import net.mindengine.jeremy.registry.Lookup;
+import net.mindengine.jeremy.registry.Registry;
 
 public class GridUtils {
     
@@ -34,6 +35,14 @@ public class GridUtils {
         languageHandlers.put(Client.LANGUAGE_JSON, new DefaultJsonLanguageHandler());
         lookup.setLanguageHandlers(languageHandlers);
         return lookup;
+    }
+    
+    public static Registry createDefaultRegistry() {
+        Registry registry = new Registry();
+        registry.addLanguageHandler(Client.LANGUAGE_JSON, new DefaultJsonLanguageHandler());
+        registry.addLanguageHandler(Client.LANGUAGE_BINARY, new DefaultJsonLanguageHandler());
+        registry.setDefaultLanguage(Client.LANGUAGE_JSON);
+        return registry;
     }
 
 }

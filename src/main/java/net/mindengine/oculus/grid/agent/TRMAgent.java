@@ -12,12 +12,15 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Properties;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import net.mindengine.jeremy.bin.RemoteFile;
 import net.mindengine.jeremy.registry.Lookup;
+import net.mindengine.jeremy.registry.Registry;
+import net.mindengine.jeremy.starter.RegistryStarter;
 import net.mindengine.oculus.grid.GridUtils;
 import net.mindengine.oculus.grid.agent.taskrunner.TaskRunner;
 import net.mindengine.oculus.grid.domain.agent.AgentInformation;
@@ -335,11 +338,33 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 		agent = new TRMAgent(server, properties);
 
 		agent.lookup = lookup;
-		agent.startConnection();
+		
+		Registry registry = GridUtils.createDefaultRegistry();
+		registry.addObject(properties.getProperty("agent.remoteName"), agent);
+		registry.setPort(Integer.parseInt(properties.getProperty("agent.port")));
+		
+		RegistryStarter registryStarter = new RegistryStarter();
+		registryStarter.setRegistry(registry);
+		
+		registryStarter.startRegistry();
+		int count = 0;
+		while(!registryStarter.getRegistry().isRunning()) {
+		    //Waiting for Registry to start
+		    Thread.sleep(100);
+		    count++;
+		    if(count>600) {
+		        throw new TimeoutException("Registry is not started");
+		    }
+		}
+		
+	    agent.startConnection();
 		agent.agentConnectionChecker.setAgent(agent);
 		agent.agentConnectionChecker.start();
 		logger.info("Registered in " + properties.getProperty("server.name"));
 		
+		while(true) {
+		    //Just a dirty hack to keep agent running
+		}
 	}
 
 	public void uploadProjectToSystem(UploadProjectData upd) throws Exception {

@@ -41,7 +41,7 @@ public class AgentInformation implements Serializable {
 
 	@Override
 	public String toString() {
-		return "name=" + name + ", uri=" + uri;
+		return "name=" + name + ", uri=" + uri+", remoteName="+remoteName;
 	}
 
     public void setUri(String uri) {
