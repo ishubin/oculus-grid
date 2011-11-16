@@ -78,6 +78,8 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 		this.server = server;
 		this.properties = properties;
 	}
+	
+	//TODO make constants for all properties
 
 	public void startConnection() throws Exception {
 

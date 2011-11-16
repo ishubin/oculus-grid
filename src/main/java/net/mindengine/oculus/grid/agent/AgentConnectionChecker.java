@@ -11,11 +11,14 @@ public class AgentConnectionChecker extends Thread {
 	private TRMAgent agent;
 	private Boolean reconnectNeeded = false;
 	
+	//TODO configure this in properties
+	private int timeout = 5000;
+	
 	@Override
 	public void run() {
 		while (enabled) {
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(timeout);
 			}
 			catch (InterruptedException e1) {
 				e1.printStackTrace();
