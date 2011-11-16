@@ -1,8 +1,10 @@
 package net.mindengine.oculus.grid.server;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 
+import net.mindengine.oculus.grid.domain.agent.AgentId;
 import net.mindengine.oculus.grid.domain.agent.AgentInformation;
 import net.mindengine.oculus.grid.service.ServerAgentRemoteInterface;
 
@@ -17,19 +19,13 @@ public class AgentWrapper {
 	 */
 	private static Long _uniqueIdCounter = 0L;
 
-	private Long agentId;
+	private AgentId agentId;
 	private ServerAgentRemoteInterface agentRemoteInterface;
 	private Integer status = 0;
 	private AgentInformation agentInformation;
 	private TaskWrapper assignedTask;
 
-	public Long getAgentId() {
-		return agentId;
-	}
 
-	public void setAgentId(Long agentId) {
-		this.agentId = agentId;
-	}
 
 	public ServerAgentRemoteInterface getAgentRemoteInterface() {
 		return agentRemoteInterface;
@@ -49,7 +45,7 @@ public class AgentWrapper {
 	 *            exists
 	 * @return
 	 */
-	public static Long generateAgentId(Map<Long, AgentWrapper> agents) {
+	public static AgentId generateAgentId(Map<Long, AgentWrapper> agents) {
 		staticReentrantLock.lock();
 		_uniqueIdCounter++;
 		if (agents.containsKey(_uniqueIdCounter)) {
@@ -61,7 +57,11 @@ public class AgentWrapper {
 		else {
 			staticReentrantLock.unlock();
 		}
-		return _uniqueIdCounter;
+		
+		AgentId agentId = new AgentId();
+		agentId.setId(_uniqueIdCounter);
+		agentId.setToken(UUID.randomUUID().toString());
+		return agentId;
 	}
 
 	public void setStatus(Integer status) {
@@ -101,7 +101,7 @@ public class AgentWrapper {
 	public String toString() {
 		StringBuffer str = new StringBuffer();
 		str.append("agentId=");
-		str.append(agentId);
+		str.append(getAgentId());
 		str.append(", agentInformation={");
 		str.append(agentInformation.toString());
 		str.append("}, status=");
@@ -124,5 +124,13 @@ public class AgentWrapper {
 	public TaskWrapper getAssignedTask() {
 		return assignedTask;
 	}
+
+    public void setAgentId(AgentId agentId) {
+        this.agentId = agentId;
+    }
+
+    public AgentId getAgentId() {
+        return agentId;
+    }
 
 }

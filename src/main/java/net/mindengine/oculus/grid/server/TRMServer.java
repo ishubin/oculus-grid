@@ -13,6 +13,7 @@ import net.mindengine.jeremy.registry.Lookup;
 import net.mindengine.jeremy.registry.Registry;
 import net.mindengine.oculus.grid.GridUtils;
 import net.mindengine.oculus.grid.console.ConsoleCommandScanner;
+import net.mindengine.oculus.grid.domain.agent.AgentId;
 import net.mindengine.oculus.grid.domain.agent.AgentInformation;
 import net.mindengine.oculus.grid.domain.agent.AgentStatus;
 import net.mindengine.oculus.grid.domain.task.DefaultTask;
@@ -257,13 +258,22 @@ public class TRMServer implements ClientServerRemoteInterface, AgentServerRemote
     }
 
     @Override
-    public Long registerAgent(AgentInformation agentInformation) throws Exception {
+    public AgentId registerAgent(AgentInformation agentInformation, AgentId previousAgentId) throws Exception {
+        /*
+         * In case if agents needs to be reconnected it will send its
+         * previous id and token and TRMServer will remove that instance of
+         * agent and will create a new one.
+         */
+        if (previousAgentId != null) {
+            agentContainer.removeAgent(previousAgentId);
+        }
+
         Lookup lookup = GridUtils.createDefaultLookup();
 
         lookup.setUrl(agentInformation.getUri() + ":" + agentInformation.getPort());
         ServerAgentRemoteInterface agentRemoteInterface = lookup.getRemoteObject(agentInformation.getRemoteName(), ServerAgentRemoteInterface.class);
 
-        Long agentId = agentContainer.registerAgent(agentInformation, agentRemoteInterface);
+        AgentId agentId = agentContainer.registerAgent(agentInformation, agentRemoteInterface);
         logger.info("Agent " + agentInformation.getName() + " was registered");
         return agentId;
     }
@@ -280,7 +290,7 @@ public class TRMServer implements ClientServerRemoteInterface, AgentServerRemote
 
                 if (taskStatus.getStatus().equals(TaskStatus.COMPLETED)) {
                     AgentWrapper agent = taskWrapper.getAssignedAgent();
-                    agentContainer.freeAgent(agent.getAgentId());
+                    agentContainer.freeAgent(agent.getAgentId().getId());
                     taskContainer.moveTaskToCompleted(taskWrapper);
                     logger.info("Task " + taskId + " is completed");
                 }

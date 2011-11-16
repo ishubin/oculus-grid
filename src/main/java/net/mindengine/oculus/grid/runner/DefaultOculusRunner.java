@@ -23,8 +23,8 @@ public class DefaultOculusRunner extends OculusRunner {
         Integer agentPort = Integer.parseInt(args[1]);
         String agentName = args[2];
         String suitePath = null;
-        if (args.length > 4) {
-            suitePath = args[4];
+        if (args.length > 3) {
+            suitePath = args[3];
         }
         else {
             suitePath = "suite.xml";

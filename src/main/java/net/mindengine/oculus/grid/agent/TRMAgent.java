@@ -23,6 +23,7 @@ import net.mindengine.jeremy.registry.Registry;
 import net.mindengine.jeremy.starter.RegistryStarter;
 import net.mindengine.oculus.grid.GridUtils;
 import net.mindengine.oculus.grid.agent.taskrunner.TaskRunner;
+import net.mindengine.oculus.grid.domain.agent.AgentId;
 import net.mindengine.oculus.grid.domain.agent.AgentInformation;
 import net.mindengine.oculus.grid.domain.agent.AgentStatus;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
@@ -56,7 +57,7 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 	private AgentConnectionChecker agentConnectionChecker = new AgentConnectionChecker();
 	private Task task;
 	private TaskStatus taskStatus;
-	private Long id;
+	private AgentId agentId = null;
 
 	private ReentrantLock uploadProjectsLock = new ReentrantLock();
 	private Collection<UploadProjectData> uploadProjects = new LinkedList<UploadProjectData>();
@@ -93,8 +94,10 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 
 		logger.info("Starting agent: " + agentInformation);
 
-		id = server.registerAgent(agentInformation);
-		logger.info("Registered on server with id = " + id);
+		//Sending also the previous agentId in case if there was a reconnection
+		AgentId newAgentId = server.registerAgent(agentInformation, agentId);
+		this.agentId = newAgentId;
+		logger.info("Registered on server with id = " + agentId.getId()+" and token = "+agentId.getToken());
 	}
 
 	@Override
@@ -247,10 +250,8 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 		task = null;
 
 	}
+	
 
-	public Long getId() {
-		return id;
-	}
 
 	public static void verifyResource(Properties properties, String key) throws Exception {
 		String path = properties.getProperty(key);
@@ -286,27 +287,10 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 			throw new Exception("The agent.oculus.library directory should contain " + libName + " library");
 		}
 	}
-
-	public static void verifyOculusLibrary(Properties properties) throws Exception {
-		String path = properties.getProperty("agent.oculus.library");
-		File file = new File(path);
-		File[] files = file.listFiles();
-
-		verifyOculusLibrary(files, "oculus-test-run-manager");
-		verifyOculusLibrary(files, "oculus-test-run-framework");
-		verifyOculusLibrary(files, "commons-beanutils");
-		verifyOculusLibrary(files, "commons-digester");
-		verifyOculusLibrary(files, "commons-lang");
-		verifyOculusLibrary(files, "commons-logging");
-		verifyOculusLibrary(files, "mysql-connector-java-5.0.6-bin");
-		verifyOculusLibrary(files, "spring.jar");
-		verifyOculusLibrary(files, "spring-jdbc.jar");
-
-	}
-
+	
 	/**
 	 * This method will be used each 30 seconds after the connection to
-	 * TRMServer was lost
+	 * TRMServer is lost
 	 * 
 	 * @throws Exception
 	 */
@@ -325,7 +309,7 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 
 		verifyResource(properties, "agent.oculus.library");
 		verifyResource(properties, "agent.projects.library");
-		verifyOculusLibrary(properties);
+		
 
 		String serverName = properties.getProperty("server.name");
 

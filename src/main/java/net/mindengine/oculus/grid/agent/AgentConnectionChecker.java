@@ -9,30 +9,41 @@ public class AgentConnectionChecker extends Thread {
 
 	private Boolean enabled = true;
 	private TRMAgent agent;
-
+	private Boolean reconnectNeeded = false;
+	
 	@Override
 	public void run() {
 		while (enabled) {
 			try {
-				Thread.sleep(10000);
+				Thread.sleep(1000);
 			}
 			catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}
+			
+			if(reconnectNeeded) {
+			    try {
+                    logger.info("Trying to reconnect");
+                    agent.reconnect();
+                    // Reconnection is done successfully
+                    reconnectNeeded = false;
+                }
+                catch (Exception e) {
+                    logger.info("Unable to reconnect. Will try again later");
+                }
+			}
+			
 			try {
-				agent.getServer().checkConnection();
+			    agent.getServer().checkConnection();
 			}
 			catch (Exception exception) {
 				exception.printStackTrace();
-				try {
-					logger.info("Trying to reconnect");
-					agent.reconnect();
-
-					// Reconnection is done successfully
-				}
-				catch (Exception e) {
-					logger.info("Unable to reconnect. Will try again later");
-				}
+				
+				/**
+				 * Doing this trick because lookup still keeps the old object and when the TRMServer is back again the checkConnection method will not give any error.
+				 * But in case if connection was lost and after some moment is back again - we need to trigger the agent registration on TRMServer
+				 */
+				reconnectNeeded = true;
 			}
 		}
 	}

@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
+import net.mindengine.oculus.grid.domain.agent.AgentId;
 import net.mindengine.oculus.grid.domain.agent.AgentInformation;
 import net.mindengine.oculus.grid.service.ServerAgentRemoteInterface;
 
@@ -31,28 +32,29 @@ public class AgentContainer {
 
 	/**
 	 * Delegated RMI method from TRMServer
+	 * This method locks agentsContainer
 	 * 
 	 * @param agentInformation
 	 *            Information about new agent
 	 * 
 	 * @param agentRemoteInterface
 	 *            Agents remote instance
-	 * @return Id of the agent
+	 * @return Id and generated token of the agent
 	 */
-	public Long registerAgent(AgentInformation agentInformation, ServerAgentRemoteInterface agentRemoteInterface) {
-		Long agentId = null;
+	public AgentId registerAgent(AgentInformation agentInformation, ServerAgentRemoteInterface agentRemoteInterface) {
+		AgentId agentId = null;
 		agentLock.lock();
 		try {
 			logger.info("Registering Agent: " + agentInformation.toString());
 			agentId = AgentWrapper.generateAgentId(agents);
 			AgentWrapper agent = new AgentWrapper();
 			agent.setAgentRemoteInterface(agentRemoteInterface);
+			
 			agent.setAgentId(agentId);
 			agent.setStatus(AgentWrapper.FREE);
 			agent.setAgentInformation(agentInformation);
-			agents.put(agentId, agent);
-
-			freeAgents.put(agentId, agent);
+			agents.put(agentId.getId(), agent);
+			freeAgents.put(agentId.getId(), agent);
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
@@ -61,6 +63,28 @@ public class AgentContainer {
 			agentLock.unlock();
 		}
 		return agentId;
+	}
+	
+	/**
+	 * This method locks agentsContainer
+	 * @param agentId
+	 */
+	public void removeAgent(AgentId agentId) {
+	    agentLock.lock();
+	    try{
+	        AgentWrapper agentWrapper = agents.get(agentId.getId());
+	        if(agentWrapper!=null) {
+	            if(agentWrapper.getAgentId().getToken().equals(agentId.getToken())){
+	                removeAgent(agentWrapper);
+	            }
+	        }
+	    }
+	    catch (Exception e) {
+            e.printStackTrace();
+        }
+	    finally {
+	        agentLock.unlock();
+	    }
 	}
 
 	/**
@@ -74,7 +98,7 @@ public class AgentContainer {
 			AgentWrapper agent = agents.get(agentId);
 			agent.setStatus(AgentWrapper.FREE);
 			agent.setAssignedTask(null);
-			freeAgents.put(agent.getAgentId(), agent);
+			freeAgents.put(agent.getAgentId().getId(), agent);
 		}
 		catch (Throwable e) {
 			logger.error(e);
@@ -133,8 +157,11 @@ public class AgentContainer {
 		return agentLock;
 	}
 
+	
 	protected void removeAgent(AgentWrapper agent) {
-		agents.remove(agent.getAgentId());
+	    System.out.println("Removing agent with id = "+agent.getAgentId().getId()+", token = "+agent.getAgentId().getToken());
+		agents.remove(agent.getAgentId().getId());
+		freeAgents.remove(agent.getAgentId().getId());
 	}
 
 	public void printAgents() {

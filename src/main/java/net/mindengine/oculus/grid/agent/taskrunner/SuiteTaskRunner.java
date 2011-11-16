@@ -96,7 +96,7 @@ public class SuiteTaskRunner extends TaskRunner {
 			logger.info("Saving suite to " + file.getAbsolutePath());
 			XmlSuiteParser.saveSuite(task.getSuite(), file);
 
-			String processCommand = "java -classpath " + oculusLibraryPath + File.separator + "*" + jSeparator + currentProjectDir + File.separator + "libs" + File.separator + "*" + jSeparator + currentProjectDir + File.separator + "*" + " " + oculusRunnerClasspath + " " + getAgentProperties().getProperty("server.host") + " " + getAgentProperties().getProperty("server.port") + " " + getAgentProperties().getProperty("server.name") + " " + getAgent().getId() + " " + suiteFileName;
+			String processCommand = "java -classpath " + oculusLibraryPath + File.separator + "*" + jSeparator + currentProjectDir + File.separator + "libs" + File.separator + "*" + jSeparator + currentProjectDir + File.separator + "*" + " " + oculusRunnerClasspath + " " + getAgentProperties().getProperty("agent.host") + " " + getAgentProperties().getProperty("agent.port") + " " + getAgentProperties().getProperty("agent.remoteName")  + " " + suiteFileName;
 
 			logger.info("Working directory is: " + currentProjectDir);
 			logger.info("Executing the process: \n" + processCommand);
