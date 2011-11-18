@@ -14,9 +14,9 @@ public class AgentInformation implements Serializable {
 
 	private String name;
 	/**
-	 * Remote URI on which the agent can be accessed
+	 * Remote host on which the agent can be accessed from server
 	 */
-	private String uri;
+	private String host;
 	private String remoteName;
 	private String description;
 	private Integer port;
@@ -37,20 +37,10 @@ public class AgentInformation implements Serializable {
 		this.name = name;
 	}
 
-	
-
 	@Override
 	public String toString() {
-		return "name=" + name + ", uri=" + uri+", remoteName="+remoteName;
+		return "name=" + name + ", host=" + getHost()+", remoteName="+remoteName;
 	}
-
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
-
-    public String getUri() {
-        return uri;
-    }
 
     public void setRemoteName(String remoteName) {
         this.remoteName = remoteName;
@@ -66,5 +56,13 @@ public class AgentInformation implements Serializable {
 
     public Integer getPort() {
         return port;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
     }
 }

@@ -36,7 +36,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  */
 public class TRMServer implements ClientServerRemoteInterface, AgentServerRemoteInterface {
-    private static final long serialVersionUID = 699877285660409518L;
+
 
     private Log logger = LogFactory.getLog(getClass());
 
@@ -82,6 +82,7 @@ public class TRMServer implements ClientServerRemoteInterface, AgentServerRemote
         commandScanner.start();
     }
 
+    @SuppressWarnings("unused")
     @Override
     public TaskStatus getTaskStatus(Long taskId) throws Exception {
         TaskWrapper taskWrapper = taskContainer.getTask(taskId);
@@ -270,7 +271,7 @@ public class TRMServer implements ClientServerRemoteInterface, AgentServerRemote
 
         Lookup lookup = GridUtils.createDefaultLookup();
 
-        lookup.setUrl(agentInformation.getUri() + ":" + agentInformation.getPort());
+        lookup.setUrl("http://"+agentInformation.getHost() + ":" + agentInformation.getPort());
         ServerAgentRemoteInterface agentRemoteInterface = lookup.getRemoteObject(agentInformation.getRemoteName(), ServerAgentRemoteInterface.class);
 
         AgentId agentId = agentContainer.registerAgent(agentInformation, agentRemoteInterface);
@@ -319,9 +320,9 @@ public class TRMServer implements ClientServerRemoteInterface, AgentServerRemote
         Properties properties = new Properties();
         properties.load(new FileReader(new File(GridUtils.getMandatoryResourceFile(TRMServer.class, "/server.properties"))));
 
-        Integer port = Integer.parseInt(properties.getProperty("server.port"));
+        Integer port = Integer.parseInt(properties.getProperty(ServerProperties.SERVER_PORT));
 
-        String strStoreCompletedTasksTime = properties.getProperty("server.store.completed.tasks.time");
+        String strStoreCompletedTasksTime = properties.getProperty(ServerProperties.SERVER_STORE_COMPLETED_TASKS_TIME);
         if (strStoreCompletedTasksTime == null || strStoreCompletedTasksTime.isEmpty()) {
             server.setStoreCompletedTasksTime(null);
         } else
@@ -329,7 +330,7 @@ public class TRMServer implements ClientServerRemoteInterface, AgentServerRemote
 
         server.logger.info("Creating server on port: " + port);
 
-        String serverName = properties.getProperty("server.name");
+        String serverName = properties.getProperty(ServerProperties.SERVER_NAME);
         if (serverName == null || serverName.isEmpty()) {
             throw new Exception("Name of server is not specified");
         }

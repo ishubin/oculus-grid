@@ -46,7 +46,8 @@ import org.apache.commons.logging.LogFactory;
  * 
  */
 public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerListener {
-	private static final long serialVersionUID = 4670539314743293843L;
+	//TODO agent host should be configurable. This would be used in case agents identifies wrong IP address
+    
 	private Log logger = LogFactory.getLog(getClass());
 
 	private AgentInformation agentInformation = new AgentInformation();
@@ -84,15 +85,17 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 	public void startConnection() throws Exception {
 
 		// Detecting the machines name
-	    InetAddress addr = InetAddress.getLocalHost();
-
-	    String hostname = addr.getHostName();
-	    agentInformation.setUri("http://"+hostname);
+	    String host = properties.getProperty(AgentProperties.AGENT_HOST);
+	    if(host==null || host.trim().isEmpty()) {
+	        InetAddress addr = InetAddress.getLocalHost();
+	        host = addr.getHostName();
+	    }
 	    
-		agentInformation.setName(properties.getProperty("agent.name"));
-		agentInformation.setRemoteName(properties.getProperty("agent.remoteName"));
-		agentInformation.setDescription(properties.getProperty("agent.description"));
-		agentInformation.setPort(Integer.parseInt(properties.getProperty("agent.port")));
+	    agentInformation.setHost(host);
+		agentInformation.setName(properties.getProperty(AgentProperties.SERVER_NAME));
+		agentInformation.setRemoteName(properties.getProperty(AgentProperties.AGENT_REMOTE_NAME));
+		agentInformation.setDescription(properties.getProperty(AgentProperties.AGENT_DESCRIPTION));
+		agentInformation.setPort(Integer.parseInt(properties.getProperty(AgentProperties.AGENT_PORT)));
 
 		logger.info("Starting agent: " + agentInformation);
 
@@ -297,7 +300,7 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 	 * @throws Exception
 	 */
 	public void reconnect() throws Exception {
-	    String serverName =  properties.getProperty("server.name");
+	    String serverName =  properties.getProperty(AgentProperties.SERVER_NAME);
 		logger.info("Connecting to " + serverName);
 		
 		this.server = lookup.getRemoteObject(serverName, AgentServerRemoteInterface.class);
@@ -309,16 +312,16 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 		Properties properties = new Properties();
 		properties.load(new FileReader(new File(GridUtils.getMandatoryResourceFile(TRMAgent.class, "/agent.properties"))));
 
-		verifyResource(properties, "agent.oculus.library");
-		verifyResource(properties, "agent.projects.library");
+		//verifyResource(properties, "agent.oculus.library");
+		verifyResource(properties, AgentProperties.AGENT_PROJECTS_LIBRARY);
 		
 
-		String serverName = properties.getProperty("server.name");
+		String serverName = properties.getProperty(AgentProperties.SERVER_NAME);
 
 		TRMAgent agent = null;
 
 		Lookup lookup = GridUtils.createDefaultLookup();
-		lookup.setUrl("http://"+properties.getProperty("server.host")+":"+properties.getProperty("server.port"));
+		lookup.setUrl("http://"+properties.getProperty(AgentProperties.SERVER_HOST)+":"+properties.getProperty(AgentProperties.SERVER_PORT));
 		
 		AgentServerRemoteInterface server = (AgentServerRemoteInterface) lookup.getRemoteObject(serverName, AgentServerRemoteInterface.class);
 		agent = new TRMAgent(server, properties);
@@ -326,8 +329,8 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 		agent.lookup = lookup;
 		
 		Registry registry = GridUtils.createDefaultRegistry();
-		registry.addObject(properties.getProperty("agent.remoteName"), agent);
-		registry.setPort(Integer.parseInt(properties.getProperty("agent.port")));
+		registry.addObject(properties.getProperty(AgentProperties.AGENT_REMOTE_NAME), agent);
+		registry.setPort(Integer.parseInt(properties.getProperty(AgentProperties.AGENT_PORT)));
 		
 		RegistryStarter registryStarter = new RegistryStarter();
 		registryStarter.setRegistry(registry);
@@ -346,7 +349,7 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 	    agent.startConnection();
 		agent.agentConnectionChecker.setAgent(agent);
 		agent.agentConnectionChecker.start();
-		logger.info("Registered in " + properties.getProperty("server.name"));
+		logger.info("Registered in " + properties.getProperty(AgentProperties.SERVER_NAME));
 		
 		while(true) {
 		    //Just a dirty hack to keep agent running
@@ -355,7 +358,7 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 
 	public void uploadProjectToSystem(UploadProjectData upd) throws Exception {
 		logger.info("Uploading project content: " + upd.getPath() + " version: " + upd.getVersion());
-		String projectLibraryPath = properties.getProperty("agent.projects.library");
+		String projectLibraryPath = properties.getProperty(AgentProperties.AGENT_PROJECTS_LIBRARY);
 		File projectDir = new File(projectLibraryPath + File.separator + upd.getPath());
 		if (!projectDir.exists()) {
 			projectDir.mkdir();
