@@ -14,9 +14,9 @@ public class CompletedTaskCleaner extends Thread {
 
 	private Log logger = LogFactory.getLog(getClass());
 	private TaskContainer taskContainer;
-	private TRMServer trmServer;
+	private Server trmServer;
 
-	public CompletedTaskCleaner(TRMServer trmServer) {
+	public CompletedTaskCleaner(Server trmServer) {
 		this.setTrmServer(trmServer);
 	}
 
@@ -67,12 +67,12 @@ public class CompletedTaskCleaner extends Thread {
 	}
 
 
-	public void setTrmServer(TRMServer trmServer) {
+	public void setTrmServer(Server trmServer) {
 	    this.trmServer = trmServer;
     }
 
 
-	public TRMServer getTrmServer() {
+	public Server getTrmServer() {
 	    return trmServer;
     }
 

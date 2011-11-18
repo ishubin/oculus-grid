@@ -2,7 +2,7 @@ package net.mindengine.oculus.grid.agent.taskrunner;
 
 import java.util.Properties;
 
-import net.mindengine.oculus.grid.agent.TRMAgent;
+import net.mindengine.oculus.grid.agent.Agent;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
 import net.mindengine.oculus.grid.domain.task.Task;
 import net.mindengine.oculus.grid.domain.task.TaskStatus;
@@ -21,7 +21,7 @@ public abstract class TaskRunner extends Thread {
 	private Task task;
 	private TaskStatus taskStatus;
 	private Properties agentProperties;
-	private TRMAgent agent;
+	private Agent agent;
 
 	protected TaskRunner() {
 
@@ -62,11 +62,11 @@ public abstract class TaskRunner extends Thread {
 		return agentProperties;
 	}
 
-	public void setAgent(TRMAgent agent) {
+	public void setAgent(Agent agent) {
 		this.agent = agent;
 	}
 
-	public TRMAgent getAgent() {
+	public Agent getAgent() {
 		return agent;
 	}
 }

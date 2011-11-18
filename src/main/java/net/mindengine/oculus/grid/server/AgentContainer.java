@@ -159,8 +159,7 @@ public class AgentContainer {
 
 	
 	protected void removeAgent(AgentWrapper agent) {
-	    System.out.println("Removing agent with id = "+agent.getAgentId().getId()+", token = "+agent.getAgentId().getToken());
-		agents.remove(agent.getAgentId().getId());
+	    agents.remove(agent.getAgentId().getId());
 		freeAgents.remove(agent.getAgentId().getId());
 	}
 

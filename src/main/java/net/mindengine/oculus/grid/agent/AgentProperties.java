@@ -7,6 +7,7 @@ public class AgentProperties {
     public static final String SERVER_NAME = "server.name".intern();
     
     public static final String AGENT_DESCRIPTION = "agent.description".intern();
+    public static final String AGENT_NAME = "agent.name".intern();
     public static final String AGENT_HOST = "agent.host".intern();
     public static final String AGENT_PORT = "agent.port".intern();
     public static final String AGENT_TAGS = "agent.tags".intern();

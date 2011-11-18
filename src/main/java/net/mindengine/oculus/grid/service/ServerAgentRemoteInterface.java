@@ -3,17 +3,17 @@ package net.mindengine.oculus.grid.service;
 import java.rmi.Remote;
 
 import net.mindengine.jeremy.bin.RemoteFile;
-import net.mindengine.oculus.grid.agent.TRMAgent;
+import net.mindengine.oculus.grid.agent.Agent;
 import net.mindengine.oculus.grid.domain.agent.AgentStatus;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
-import net.mindengine.oculus.grid.server.TRMServer;
+import net.mindengine.oculus.grid.server.Server;
 
 /**
  * Server to TRMAgent message specification. Will be implemented by TRMAgent
  * 
  * @author Ivan Shubin
- * @see TRMAgent
- * @see TRMServer
+ * @see Agent
+ * @see Server
  */
 public interface ServerAgentRemoteInterface extends Remote {
 	/**

@@ -35,7 +35,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Ivan Shubin
  * 
  */
-public class TRMServer implements ClientServerRemoteInterface, AgentServerRemoteInterface {
+public class Server implements ClientServerRemoteInterface, AgentServerRemoteInterface {
 
 
     private Log logger = LogFactory.getLog(getClass());
@@ -53,17 +53,16 @@ public class TRMServer implements ClientServerRemoteInterface, AgentServerRemote
      */
     private Long storeCompletedTasksTime = 300000L;
 
-    protected TRMServer() {
+    protected Server() {
     }
 
     /**
      * Handles the console reading and executes the console command
      * 
-     * @param properties
      * 
      * @throws Exception
      */
-    private void handle(Properties properties) throws Exception {
+    private void handle() throws Exception {
         agentHandler.setAgentContainer(agentContainer);
         agentHandler.setTaskContainer(taskContainer);
         agentHandler.start();
@@ -82,7 +81,6 @@ public class TRMServer implements ClientServerRemoteInterface, AgentServerRemote
         commandScanner.start();
     }
 
-    @SuppressWarnings("unused")
     @Override
     public TaskStatus getTaskStatus(Long taskId) throws Exception {
         TaskWrapper taskWrapper = taskContainer.getTask(taskId);
@@ -311,37 +309,41 @@ public class TRMServer implements ClientServerRemoteInterface, AgentServerRemote
             logger.info("Couldn't find task with id: " + taskId);
     }
 
-    public static void main(String[] args) throws Exception {
-        TRMServer server = new TRMServer();
-
+    
+    public void startServer(Integer port, String serverName) throws Exception {
         /*
          * Loading properties file
          */
-        Properties properties = new Properties();
-        properties.load(new FileReader(new File(GridUtils.getMandatoryResourceFile(TRMServer.class, "/server.properties"))));
-
-        Integer port = Integer.parseInt(properties.getProperty(ServerProperties.SERVER_PORT));
-
-        String strStoreCompletedTasksTime = properties.getProperty(ServerProperties.SERVER_STORE_COMPLETED_TASKS_TIME);
-        if (strStoreCompletedTasksTime == null || strStoreCompletedTasksTime.isEmpty()) {
-            server.setStoreCompletedTasksTime(null);
-        } else
-            server.setStoreCompletedTasksTime(Long.parseLong(strStoreCompletedTasksTime));
-
-        server.logger.info("Creating server on port: " + port);
-
-        String serverName = properties.getProperty(ServerProperties.SERVER_NAME);
+        logger.info("Creating server on port: " + port);
+        
         if (serverName == null || serverName.isEmpty()) {
             throw new Exception("Name of server is not specified");
         }
 
         Registry registry = GridUtils.createDefaultRegistry();
-        registry.addObject(serverName, server);
+        registry.addObject(serverName, this);
         registry.setPort(port);
 
-        server.logger.info("Starting server");
-        server.handle(properties);
+        logger.info("Starting server");
+        handle();
         registry.start();
+    }
+    
+    public static void main(String[] args) throws Exception {
+        Server server = new Server();
+        
+        Properties properties = new Properties();
+        properties.load(new FileReader(new File(GridUtils.getMandatoryResourceFile(Server.class, "/server.properties"))));
+        Integer port = Integer.parseInt(properties.getProperty(ServerProperties.SERVER_PORT));
+        String strStoreCompletedTasksTime = properties.getProperty(ServerProperties.SERVER_STORE_COMPLETED_TASKS_TIME);
+        if (strStoreCompletedTasksTime == null || strStoreCompletedTasksTime.isEmpty()) {
+            server.setStoreCompletedTasksTime(null);
+        } else {
+            server.setStoreCompletedTasksTime(Long.parseLong(strStoreCompletedTasksTime));
+        }
+        String serverName = properties.getProperty(ServerProperties.SERVER_NAME);
+        
+        server.startServer(port, serverName);
     }
 
     public void quit() {

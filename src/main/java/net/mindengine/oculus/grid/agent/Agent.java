@@ -45,10 +45,11 @@ import org.apache.commons.logging.LogFactory;
  * @author Ivan Shubin
  * 
  */
-public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerListener {
-	//TODO agent host should be configurable. This would be used in case agents identifies wrong IP address
-    
-	private Log logger = LogFactory.getLog(getClass());
+public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListener {
+	
+	public static final String AGENT_RECONNECT_TIMEOUT = "agent.reconnect.timeout";
+
+    private Log logger = LogFactory.getLog(getClass());
 
 	private AgentInformation agentInformation = new AgentInformation();
 	private AgentServerRemoteInterface server;
@@ -62,6 +63,17 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 
 	private ReentrantLock uploadProjectsLock = new ReentrantLock();
 	private Collection<UploadProjectData> uploadProjects = new LinkedList<UploadProjectData>();
+	
+	private String serverName;
+	private String serverHost;
+	private Integer serverPort;
+	
+	private String agentRemoteName;
+    private String agentHost;
+    private String agentName;
+    private Integer agentPort;
+    
+    
 
 	/**
 	 * Flag which is used by the oculus-runner in order to check if it should proceed running all next tests
@@ -74,28 +86,21 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 	private TaskRunner taskRunner;
 	private Lookup lookup;
 
-	protected TRMAgent(AgentServerRemoteInterface server, Properties properties) {
-		super();
-		this.server = server;
-		this.properties = properties;
+	protected Agent() {
 	}
-	
-	//TODO make constants for all properties
 
 	public void startConnection() throws Exception {
-
 		// Detecting the machines name
-	    String host = properties.getProperty(AgentProperties.AGENT_HOST);
-	    if(host==null || host.trim().isEmpty()) {
+	    if(agentHost==null || agentHost.trim().isEmpty()) {
 	        InetAddress addr = InetAddress.getLocalHost();
-	        host = addr.getHostName();
+	        agentHost = addr.getHostName();
 	    }
 	    
-	    agentInformation.setHost(host);
-		agentInformation.setName(properties.getProperty(AgentProperties.SERVER_NAME));
-		agentInformation.setRemoteName(properties.getProperty(AgentProperties.AGENT_REMOTE_NAME));
+	    agentInformation.setHost(agentHost);
+		agentInformation.setName(agentName);
+		agentInformation.setRemoteName(agentRemoteName);
 		agentInformation.setDescription(properties.getProperty(AgentProperties.AGENT_DESCRIPTION));
-		agentInformation.setPort(Integer.parseInt(properties.getProperty(AgentProperties.AGENT_PORT)));
+		agentInformation.setPort(agentPort);
 
 		logger.info("Starting agent: " + agentInformation);
 
@@ -148,7 +153,6 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 
 	@Override
 	public void runSuiteTask(SuiteTask task) throws Exception {
-	    
 	    shouldCurrentTaskProceed = true;
 	    
 		/*
@@ -307,55 +311,6 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 		startConnection();
 	}
 
-	public static void main(String[] args) throws Exception {
-		Log logger = LogFactory.getLog(TRMAgent.class);
-		Properties properties = new Properties();
-		properties.load(new FileReader(new File(GridUtils.getMandatoryResourceFile(TRMAgent.class, "/agent.properties"))));
-
-		//verifyResource(properties, "agent.oculus.library");
-		verifyResource(properties, AgentProperties.AGENT_PROJECTS_LIBRARY);
-		
-
-		String serverName = properties.getProperty(AgentProperties.SERVER_NAME);
-
-		TRMAgent agent = null;
-
-		Lookup lookup = GridUtils.createDefaultLookup();
-		lookup.setUrl("http://"+properties.getProperty(AgentProperties.SERVER_HOST)+":"+properties.getProperty(AgentProperties.SERVER_PORT));
-		
-		AgentServerRemoteInterface server = (AgentServerRemoteInterface) lookup.getRemoteObject(serverName, AgentServerRemoteInterface.class);
-		agent = new TRMAgent(server, properties);
-
-		agent.lookup = lookup;
-		
-		Registry registry = GridUtils.createDefaultRegistry();
-		registry.addObject(properties.getProperty(AgentProperties.AGENT_REMOTE_NAME), agent);
-		registry.setPort(Integer.parseInt(properties.getProperty(AgentProperties.AGENT_PORT)));
-		
-		RegistryStarter registryStarter = new RegistryStarter();
-		registryStarter.setRegistry(registry);
-		
-		registryStarter.startRegistry();
-		int count = 0;
-		while(!registryStarter.getRegistry().isRunning()) {
-		    //Waiting for Registry to start
-		    Thread.sleep(100);
-		    count++;
-		    if(count>600) {
-		        throw new TimeoutException("Registry is not started");
-		    }
-		}
-		
-	    agent.startConnection();
-		agent.agentConnectionChecker.setAgent(agent);
-		agent.agentConnectionChecker.start();
-		logger.info("Registered in " + properties.getProperty(AgentProperties.SERVER_NAME));
-		
-		while(true) {
-		    //Just a dirty hack to keep agent running
-		}
-	}
-
 	public void uploadProjectToSystem(UploadProjectData upd) throws Exception {
 		logger.info("Uploading project content: " + upd.getPath() + " version: " + upd.getVersion());
 		String projectLibraryPath = properties.getProperty(AgentProperties.AGENT_PROJECTS_LIBRARY);
@@ -449,5 +404,114 @@ public class TRMAgent implements ServerAgentRemoteInterface, AgentTestRunnerList
 			System.out.println(entry.getName());
 		}
 	}
+	
+	public void startAgent() throws Exception {
+	    Log logger = LogFactory.getLog(Agent.class);
+	    
+        verifyResource(properties, AgentProperties.AGENT_PROJECTS_LIBRARY);
+        
+        Lookup lookup = GridUtils.createDefaultLookup();
+        lookup.setUrl("http://"+serverHost+":"+serverPort);
+        
+        this.server = (AgentServerRemoteInterface) lookup.getRemoteObject(serverName, AgentServerRemoteInterface.class);
+        this.lookup = lookup;
+        
+        Registry registry = GridUtils.createDefaultRegistry();
+        registry.addObject(agentRemoteName, this);
+        registry.setPort(agentPort);
+        
+        RegistryStarter registryStarter = new RegistryStarter();
+        registryStarter.setRegistry(registry);
+        
+        registryStarter.startRegistry();
+        int count = 0;
+        while(!registryStarter.getRegistry().isRunning()) {
+            //Waiting for Registry to start
+            Thread.sleep(100);
+            count++;
+            if(count>600) {
+                throw new TimeoutException("Registry is not started");
+            }
+        }
+        
+        startConnection();
+        agentConnectionChecker.setAgent(this);
+        agentConnectionChecker.start();
+        logger.info("Registered in " + serverName);
+        
+        while(true) {
+            //Just a dirty hack to keep agent running
+        }
+	}
+	
+	public String getServerName() {
+        return serverName;
+    }
 
+    public String getServerHost() {
+        return serverHost;
+    }
+
+    public Integer getServerPort() {
+        return serverPort;
+    }
+
+    public String getAgentRemoteName() {
+        return agentRemoteName;
+    }
+
+    public String getAgentHost() {
+        return agentHost;
+    }
+
+    public String getAgentName() {
+        return agentName;
+    }
+
+    public Integer getAgentPort() {
+        return agentPort;
+    }
+
+    public void setServerName(String serverName) {
+        this.serverName = serverName;
+    }
+
+    public void setServerHost(String serverHost) {
+        this.serverHost = serverHost;
+    }
+
+    public void setServerPort(Integer serverPort) {
+        this.serverPort = serverPort;
+    }
+
+    public void setAgentRemoteName(String agentRemoteName) {
+        this.agentRemoteName = agentRemoteName;
+    }
+
+    public void setAgentHost(String agentHost) {
+        this.agentHost = agentHost;
+    }
+
+    public void setAgentName(String agentName) {
+        this.agentName = agentName;
+    }
+
+    public void setAgentPort(Integer agentPort) {
+        this.agentPort = agentPort;
+    }
+
+    public static void main(String[] args) throws Exception {
+        Agent agent = new Agent();
+        agent.properties = new Properties();
+        agent.properties.load(new FileReader(new File(GridUtils.getMandatoryResourceFile(Agent.class, "/agent.properties"))));
+        agent.serverHost = agent.properties.getProperty(AgentProperties.SERVER_HOST);
+        agent.serverPort = Integer.parseInt(agent.properties.getProperty(AgentProperties.SERVER_PORT));
+        agent.serverName = agent.properties.getProperty(AgentProperties.SERVER_NAME);
+        
+        agent.agentHost = agent.properties.getProperty(AgentProperties.AGENT_HOST);
+        agent.agentPort = Integer.parseInt(agent.properties.getProperty(AgentProperties.AGENT_PORT));
+        agent.agentName = agent.properties.getProperty(AgentProperties.AGENT_NAME);
+        agent.agentRemoteName = agent.properties.getProperty(AgentProperties.AGENT_REMOTE_NAME);
+        agent.startAgent();
+    }
 }

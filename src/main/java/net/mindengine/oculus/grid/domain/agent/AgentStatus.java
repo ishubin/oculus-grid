@@ -2,7 +2,7 @@ package net.mindengine.oculus.grid.domain.agent;
 
 import java.io.Serializable;
 
-import net.mindengine.oculus.grid.server.TRMServer;
+import net.mindengine.oculus.grid.server.Server;
 
 public class AgentStatus implements Serializable {
 	public static final int FREE = 1;
@@ -14,7 +14,7 @@ public class AgentStatus implements Serializable {
 
 	/**
 	 * This field is used only for passing the info to Client. Used in getAgents
-	 * method of {@link TRMServer}
+	 * method of {@link Server}
 	 */
 	private AgentInformation agentInformation;
 

@@ -5,7 +5,7 @@ import java.rmi.Remote;
 import net.mindengine.oculus.grid.runner.OculusRunner;
 
 /**
- * Used in {@link TRMAgent} for handling all the events from
+ * Used in {@link Agent} for handling all the events from
  * {@link OculusRunner}
  * 
  * @author Ivan Shubin

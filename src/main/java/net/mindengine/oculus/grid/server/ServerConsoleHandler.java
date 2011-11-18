@@ -1,9 +1,9 @@
 package net.mindengine.oculus.grid.server;
 
 public class ServerConsoleHandler {
-	private TRMServer server;
+	private Server server;
 
-	public ServerConsoleHandler(TRMServer server) {
+	public ServerConsoleHandler(Server server) {
 		this.server = server;
 	}
 

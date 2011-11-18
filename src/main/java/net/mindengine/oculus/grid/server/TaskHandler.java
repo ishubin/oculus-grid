@@ -15,9 +15,9 @@ import net.mindengine.oculus.grid.domain.task.TaskStatus;
 public class TaskHandler extends Thread {
 	private TaskContainer taskContainer;
 	private AgentContainer agentContainer;
-	private TRMServer trmServer;
+	private Server trmServer;
 
-	public TaskHandler(TRMServer trmServer) {
+	public TaskHandler(Server trmServer) {
 		this.trmServer = trmServer;
 	}
 

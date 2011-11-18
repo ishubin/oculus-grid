@@ -8,14 +8,15 @@ public class AgentConnectionChecker extends Thread {
 	private Log logger = LogFactory.getLog(getClass());
 
 	private Boolean enabled = true;
-	private TRMAgent agent;
+	private Agent agent;
 	private Boolean reconnectNeeded = false;
 	
-	//TODO configure this in properties
 	private int timeout = 5000;
 	
 	@Override
 	public void run() {
+	    timeout = Integer.parseInt(agent.getProperties().getProperty(Agent.AGENT_RECONNECT_TIMEOUT))*1000;
+	    
 		while (enabled) {
 			try {
 				Thread.sleep(timeout);
@@ -59,11 +60,11 @@ public class AgentConnectionChecker extends Thread {
 		this.enabled = enabled;
 	}
 
-	public void setAgent(TRMAgent agent) {
+	public void setAgent(Agent agent) {
 		this.agent = agent;
 	}
 
-	public TRMAgent getAgent() {
+	public Agent getAgent() {
 		return agent;
 	}
 
