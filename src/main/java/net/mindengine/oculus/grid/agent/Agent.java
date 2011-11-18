@@ -74,7 +74,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
     private Integer agentPort;
     
     
-
+    private Registry registry = GridUtils.createDefaultRegistry();
 	/**
 	 * Flag which is used by the oculus-runner in order to check if it should proceed running all next tests
 	 */
@@ -86,7 +86,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	private TaskRunner taskRunner;
 	private Lookup lookup;
 
-	protected Agent() {
+	public Agent() {
 	}
 
 	public void startConnection() throws Exception {
@@ -96,24 +96,24 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	        agentHost = addr.getHostName();
 	    }
 	    
-	    agentInformation.setHost(agentHost);
-		agentInformation.setName(agentName);
-		agentInformation.setRemoteName(agentRemoteName);
-		agentInformation.setDescription(properties.getProperty(AgentProperties.AGENT_DESCRIPTION));
-		agentInformation.setPort(agentPort);
+	    getAgentInformation().setHost(agentHost);
+		getAgentInformation().setName(agentName);
+		getAgentInformation().setRemoteName(agentRemoteName);
+		getAgentInformation().setDescription(properties.getProperty(AgentProperties.AGENT_DESCRIPTION));
+		getAgentInformation().setPort(agentPort);
 
-		logger.info("Starting agent: " + agentInformation);
+		logger.info("Starting agent: " + getAgentInformation());
 
 		//Sending also the previous agentId in case if there was a reconnection
-		AgentId newAgentId = server.registerAgent(agentInformation, agentId);
-		this.agentId = newAgentId;
-		logger.info("Registered on server with id = " + agentId.getId()+" and token = "+agentId.getToken());
+		AgentId newAgentId = server.registerAgent(getAgentInformation(), getAgentId());
+		this.setAgentId(newAgentId);
+		logger.info("Registered on server with id = " + getAgentId().getId()+" and token = "+getAgentId().getToken());
 	}
 
 	@Override
 	public AgentStatus getAgentStatus() throws Exception {
 		AgentStatus agentStatus = new AgentStatus();
-		agentStatus.setAgentInformation(agentInformation);
+		agentStatus.setAgentInformation(getAgentInformation());
 
 		if (task != null) {
 			agentStatus.setState(AgentStatus.BUSY);
@@ -172,7 +172,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 		if (task instanceof SuiteTask) {
 			SuiteTask suiteTask = (SuiteTask) task;
 
-			suiteTask.getSuite().setAgentName(agentInformation.getName());
+			suiteTask.getSuite().setAgentName(getAgentInformation().getName());
 		}
 		// The agent properties will be needed for launching the Process in
 		// SuiteTaskRunner
@@ -405,6 +405,10 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 		}
 	}
 	
+	public void stopAgent() throws Exception {
+	    registry.stop();
+	}
+	
 	public void startAgent() throws Exception {
 	    Log logger = LogFactory.getLog(Agent.class);
 	    
@@ -416,7 +420,6 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
         this.server = (AgentServerRemoteInterface) lookup.getRemoteObject(serverName, AgentServerRemoteInterface.class);
         this.lookup = lookup;
         
-        Registry registry = GridUtils.createDefaultRegistry();
         registry.addObject(agentRemoteName, this);
         registry.setPort(agentPort);
         
@@ -513,5 +516,21 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
         agent.agentName = agent.properties.getProperty(AgentProperties.AGENT_NAME);
         agent.agentRemoteName = agent.properties.getProperty(AgentProperties.AGENT_REMOTE_NAME);
         agent.startAgent();
+    }
+
+    public void setAgentInformation(AgentInformation agentInformation) {
+        this.agentInformation = agentInformation;
+    }
+
+    public AgentInformation getAgentInformation() {
+        return agentInformation;
+    }
+
+    public void setAgentId(AgentId agentId) {
+        this.agentId = agentId;
+    }
+
+    public AgentId getAgentId() {
+        return agentId;
     }
 }

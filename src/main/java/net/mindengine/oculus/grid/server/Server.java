@@ -53,7 +53,9 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
      */
     private Long storeCompletedTasksTime = 300000L;
 
-    protected Server() {
+    private Registry registry = GridUtils.createDefaultRegistry();
+    
+    public Server() {
     }
 
     /**
@@ -320,13 +322,16 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
             throw new Exception("Name of server is not specified");
         }
 
-        Registry registry = GridUtils.createDefaultRegistry();
         registry.addObject(serverName, this);
         registry.setPort(port);
 
         logger.info("Starting server");
         handle();
         registry.start();
+    }
+    
+    public void stopServer() throws Exception {
+        registry.stop();
     }
     
     public static void main(String[] args) throws Exception {
