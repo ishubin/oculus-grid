@@ -9,7 +9,7 @@ import java.rmi.registry.Registry;
 import net.mindengine.jeremy.bin.RemoteFile;
 import net.mindengine.oculus.grid.service.ClientServerRemoteInterface;
 
-public class TRMProjectUpload {
+public class GridProjectUpload {
 	public static void upload(String serverHost, String serverName, int serverPort, String zipFilePath, String projectName, String projectVersion) throws Exception {
 		String serverAddress = "rmi://" + serverHost + "/" + serverName;
 		System.out.println("Locating registry " + serverHost + " port " + serverPort);

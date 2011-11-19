@@ -52,14 +52,6 @@ public class AgentConnectionChecker extends Thread {
 		}
 	}
 
-	public Boolean getEnabled() {
-		return enabled;
-	}
-
-	public void setEnabled(Boolean enabled) {
-		this.enabled = enabled;
-	}
-
 	public void setAgent(Agent agent) {
 		this.agent = agent;
 	}
@@ -67,5 +59,9 @@ public class AgentConnectionChecker extends Thread {
 	public Agent getAgent() {
 		return agent;
 	}
+
+    public void stopConnectionChecker() {
+        enabled = false;
+    }
 
 }

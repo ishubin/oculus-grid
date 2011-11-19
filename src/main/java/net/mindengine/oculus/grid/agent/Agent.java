@@ -405,6 +405,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	}
 	
 	public void stopAgent() throws Exception {
+	    agentConnectionChecker.stopConnectionChecker();
 	    registry.stop();
 	}
 	

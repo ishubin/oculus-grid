@@ -29,6 +29,7 @@ public class ConnectionTest {
         }
     }
     
+    @SuppressWarnings("deprecation")
     @Test
     public void agentCanReconnectToServer() throws Exception {
         final ErrorContainer errorContainer = new ErrorContainer();
@@ -87,6 +88,7 @@ public class ConnectionTest {
         
         //Stopping server
         server.stopServer();
+        serverThread.stop();
         Thread.sleep(2000);
         
         //Starting server again
@@ -108,10 +110,17 @@ public class ConnectionTest {
         }
         Thread.sleep(2000);
         
+        server2.stopServer();
+        serverThread.stop();
+        agent.stopAgent();
+        agentThread.stop();
+        
         //Verifying that agent has reconnected successfully
         assertEquals(1L, (long)agent.getAgentId().getId());
         assertNotNull(agent.getAgentId().getToken());
         assertNotSame(agent.getAgentId().getToken(), "");
         assertNotSame(agent.getAgentId().getToken(), oldToken);
+        
     }
+    
 }
