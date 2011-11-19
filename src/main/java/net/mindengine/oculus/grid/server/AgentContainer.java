@@ -3,6 +3,7 @@ package net.mindengine.oculus.grid.server;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 
 import net.mindengine.oculus.grid.domain.agent.AgentId;
@@ -29,6 +30,42 @@ public class AgentContainer {
 	 */
 	private ReentrantLock agentLock = new ReentrantLock();
 	private Log logger = LogFactory.getLog(getClass());
+	
+	private ReentrantLock agentIdLock = new ReentrantLock();
+    /**
+     * Used for generating the agentRemoteInterface ids
+     */
+    private Long uniqueIdCounter = 0L;
+
+	/**
+     * Generates agentRemoteInterface unique ID and checks if ID exists in
+     * agentRemoteInterface list.<br>
+     * This method is thread-safe.
+     * 
+     * @param agents
+     *            Map of agents, used for verification if generated ID already
+     *            exists
+     * @return
+     */
+    public AgentId generateAgentId(Map<Long, AgentWrapper> agents) {
+        agentIdLock.lock();
+        uniqueIdCounter++;
+        if (agents.containsKey(uniqueIdCounter)) {
+            // Important! Don't forget to unlock as this method is based on
+            // recursion
+            agentIdLock.unlock();
+            return generateAgentId(agents);
+        }
+        else {
+            agentIdLock.unlock();
+        }
+        
+        AgentId agentId = new AgentId();
+        agentId.setId(uniqueIdCounter);
+        agentId.setToken(UUID.randomUUID().toString());
+        return agentId;
+    }
+
 
 	/**
 	 * Delegated RMI method from TRMServer
@@ -46,12 +83,13 @@ public class AgentContainer {
 		agentLock.lock();
 		try {
 			logger.info("Registering Agent: " + agentInformation.toString());
-			agentId = AgentWrapper.generateAgentId(agents);
+			agentId = generateAgentId(agents);
 			AgentWrapper agent = new AgentWrapper();
 			agent.setAgentRemoteInterface(agentRemoteInterface);
 			
 			agent.setAgentId(agentId);
 			agent.setStatus(AgentWrapper.FREE);
+			agentInformation.setAgentId(agentId.getId());
 			agent.setAgentInformation(agentInformation);
 			agents.put(agentId.getId(), agent);
 			freeAgents.put(agentId.getId(), agent);

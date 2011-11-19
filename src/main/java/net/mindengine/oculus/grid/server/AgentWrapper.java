@@ -1,9 +1,5 @@
 package net.mindengine.oculus.grid.server;
 
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.locks.ReentrantLock;
-
 import net.mindengine.oculus.grid.domain.agent.AgentId;
 import net.mindengine.oculus.grid.domain.agent.AgentInformation;
 import net.mindengine.oculus.grid.service.ServerAgentRemoteInterface;
@@ -13,12 +9,7 @@ public class AgentWrapper {
 	public static final Integer FREE = 1;
 	public static final Integer BUSY = 2;
 
-	private static ReentrantLock staticReentrantLock = new ReentrantLock();
-	/**
-	 * Used for generating the agentRemoteInterface ids
-	 */
-	private static Long _uniqueIdCounter = 0L;
-
+	
 	private AgentId agentId;
 	private ServerAgentRemoteInterface agentRemoteInterface;
 	private Integer status = 0;
@@ -33,35 +24,6 @@ public class AgentWrapper {
 
 	public void setAgentRemoteInterface(ServerAgentRemoteInterface agentRemoteInterface) {
 		this.agentRemoteInterface = agentRemoteInterface;
-	}
-
-	/**
-	 * Generates agentRemoteInterface unique ID and checks if ID exists in
-	 * agentRemoteInterface list.<br>
-	 * This method is thread-safe.
-	 * 
-	 * @param agents
-	 *            Map of agents, used for verification if generated ID already
-	 *            exists
-	 * @return
-	 */
-	public static AgentId generateAgentId(Map<Long, AgentWrapper> agents) {
-		staticReentrantLock.lock();
-		_uniqueIdCounter++;
-		if (agents.containsKey(_uniqueIdCounter)) {
-			// Important! Don't forget to unlock as this method is based on
-			// recursion
-			staticReentrantLock.unlock();
-			return generateAgentId(agents);
-		}
-		else {
-			staticReentrantLock.unlock();
-		}
-		
-		AgentId agentId = new AgentId();
-		agentId.setId(_uniqueIdCounter);
-		agentId.setToken(UUID.randomUUID().toString());
-		return agentId;
 	}
 
 	public void setStatus(Integer status) {

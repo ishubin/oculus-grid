@@ -12,6 +12,7 @@ import java.io.Serializable;
 public class AgentInformation implements Serializable {
 	private static final long serialVersionUID = 4788131383871097120L;
 
+	private Long agentId;
 	private String name;
 	/**
 	 * Remote host on which the agent can be accessed from server
@@ -64,5 +65,13 @@ public class AgentInformation implements Serializable {
 
     public void setHost(String host) {
         this.host = host;
+    }
+
+    public void setAgentId(Long agentId) {
+        this.agentId = agentId;
+    }
+
+    public Long getAgentId() {
+        return agentId;
     }
 }

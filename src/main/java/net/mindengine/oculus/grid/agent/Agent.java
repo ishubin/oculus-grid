@@ -47,9 +47,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListener {
 	
-	public static final String AGENT_RECONNECT_TIMEOUT = "agent.reconnect.timeout";
-
-    private Log logger = LogFactory.getLog(getClass());
+	private Log logger = LogFactory.getLog(getClass());
 
 	private AgentInformation agentInformation = new AgentInformation();
 	private AgentServerRemoteInterface server;
@@ -72,6 +70,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
     private String agentHost;
     private String agentName;
     private Integer agentPort;
+    private Integer agentReconnectionTimeout = 5;
     
     
     private Registry registry = GridUtils.createDefaultRegistry();
@@ -410,9 +409,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	}
 	
 	public void startAgent() throws Exception {
-	    Log logger = LogFactory.getLog(Agent.class);
-	    
-        verifyResource(properties, AgentProperties.AGENT_PROJECTS_LIBRARY);
+	    verifyResource(properties, AgentProperties.AGENT_PROJECTS_LIBRARY);
         
         Lookup lookup = GridUtils.createDefaultLookup();
         lookup.setUrl("http://"+serverHost+":"+serverPort);
@@ -440,7 +437,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
         startConnection();
         agentConnectionChecker.setAgent(this);
         agentConnectionChecker.start();
-        logger.info("Registered in " + serverName);
+        
         
         while(true) {
             //Just a dirty hack to keep agent running
@@ -515,6 +512,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
         agent.agentPort = Integer.parseInt(agent.properties.getProperty(AgentProperties.AGENT_PORT));
         agent.agentName = agent.properties.getProperty(AgentProperties.AGENT_NAME);
         agent.agentRemoteName = agent.properties.getProperty(AgentProperties.AGENT_REMOTE_NAME);
+        agent.agentReconnectionTimeout = Integer.parseInt(agent.properties.getProperty(AgentProperties.AGENT_RECONNECT_TIMEOUT));
         agent.startAgent();
     }
 
@@ -532,5 +530,13 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 
     public AgentId getAgentId() {
         return agentId;
+    }
+
+    public void setAgentReconnectionTimeout(Integer agentReconnectionTimeout) {
+        this.agentReconnectionTimeout = agentReconnectionTimeout;
+    }
+
+    public Integer getAgentReconnectionTimeout() {
+        return agentReconnectionTimeout;
     }
 }

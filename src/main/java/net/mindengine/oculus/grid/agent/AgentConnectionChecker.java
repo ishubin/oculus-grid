@@ -15,7 +15,7 @@ public class AgentConnectionChecker extends Thread {
 	
 	@Override
 	public void run() {
-	    timeout = Integer.parseInt(agent.getProperties().getProperty(Agent.AGENT_RECONNECT_TIMEOUT))*1000;
+	    timeout = agent.getAgentReconnectionTimeout()*1000;
 	    
 		while (enabled) {
 			try {

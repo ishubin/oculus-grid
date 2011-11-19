@@ -276,6 +276,7 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
 
         AgentId agentId = agentContainer.registerAgent(agentInformation, agentRemoteInterface);
         logger.info("Agent " + agentInformation.getName() + " was registered");
+        
         return agentId;
     }
 

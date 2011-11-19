@@ -1,11 +1,11 @@
 package net.mindengine.oculus.grid.test.suites;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 
 import java.io.File;
 import java.io.FileReader;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 import net.mindengine.oculus.grid.GridUtils;
@@ -60,7 +60,7 @@ public class ConnectionTest {
         agent.setServerHost("localhost");
         agent.setServerName("server");
         agent.setServerPort(8090);
-        
+        agent.setAgentReconnectionTimeout(1);
         
         Thread agentThread = new Thread(new Runnable() {
             @Override
@@ -87,14 +87,29 @@ public class ConnectionTest {
         
         //Stopping server
         server.stopServer();
-        Thread.sleep(10000);
+        Thread.sleep(2000);
         
         //Starting server again
+        final Server server2 = new Server();
+        serverThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    server2.startServer(8090, "server");
+                } catch (Exception e) {
+                    errorContainer.setException(e);
+                }
+            }
+        });
         serverThread.start();
-        Thread.sleep(10000);
+        Thread.sleep(2000);
+        if(errorContainer.getException()!=null) {
+            throw errorContainer.getException();
+        }
+        Thread.sleep(2000);
         
         //Verifying that agent has reconnected successfully
-        assertEquals((long)agent.getAgentId().getId(), 1L);
+        assertEquals(1L, (long)agent.getAgentId().getId());
         assertNotNull(agent.getAgentId().getToken());
         assertNotSame(agent.getAgentId().getToken(), "");
         assertNotSame(agent.getAgentId().getToken(), oldToken);
