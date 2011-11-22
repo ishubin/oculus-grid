@@ -3,19 +3,18 @@ package net.mindengine.oculus.grid.domain.task;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * Used only as argument for remote methods because because it is important to specify a concrete implementation of task for deserializer
- * @author Ivan Shubin
- *
- */
 public class DefaultTask extends Task{
-
+    
     /**
      * 
      */
-    private static final long serialVersionUID = -1404275420777342879L;
-
+    private static final long serialVersionUID = -2023693184777968999L;
     private List<SuiteTask> suiteTasks;
+
+    @Override
+    public String type() {
+        return "default";
+    }
 
     public void setSuiteTasks(List<SuiteTask> suiteTasks) {
         this.suiteTasks = suiteTasks;
@@ -24,12 +23,7 @@ public class DefaultTask extends Task{
     public List<SuiteTask> getSuiteTasks() {
         return suiteTasks;
     }
-    
-    @Override
-    public String type() {
-        return Task.TYPE_DEFAULTTASK;
-    }
-    
+
     public MultiTask convertToMultiTask() {
         MultiTask task  = new MultiTask();
         task.setAgentNames(getAgentNames());

@@ -24,6 +24,7 @@ import net.mindengine.oculus.grid.domain.task.TaskUser;
 import net.mindengine.oculus.grid.service.AgentServerRemoteInterface;
 import net.mindengine.oculus.grid.service.ClientServerRemoteInterface;
 import net.mindengine.oculus.grid.service.ServerAgentRemoteInterface;
+import net.mindengine.oculus.grid.service.exceptions.IncorrectTaskException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -111,9 +112,13 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
     @Override
     public Long runTask(DefaultTask task) throws Exception {
         logger.info("Recieved new task");
+        if(task==null || task.getSuiteTasks()==null || task.getSuiteTasks().size()==0) {
+            throw new IncorrectTaskException();
+        }
+        
         TaskWrapper taskWrapper = new TaskWrapper();
         taskWrapper.setTask(task.convertToMultiTask());
-
+        
         return taskContainer.registerNewTask(taskWrapper);
     }
 

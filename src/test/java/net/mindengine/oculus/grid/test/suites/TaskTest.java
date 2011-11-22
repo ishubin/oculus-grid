@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
@@ -18,12 +19,14 @@ import net.mindengine.oculus.grid.domain.task.SuiteTask;
 import net.mindengine.oculus.grid.domain.task.TaskInformation;
 import net.mindengine.oculus.grid.server.Server;
 import net.mindengine.oculus.grid.service.ClientServerRemoteInterface;
+import net.mindengine.oculus.grid.service.exceptions.IncorrectTaskException;
 
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.sun.corba.se.impl.orbutil.threadpool.TimeoutException;
 
 public class TaskTest {
     static final Server server = new Server();
@@ -91,7 +94,7 @@ public class TaskTest {
         assertEquals(1, taskList.size());
     }
     
-    @Test(expected=TimeoutException.class)
+    @Test(expected=IncorrectTaskException.class)
     public void emptyTaskGivesError() throws Exception {
         GridClient client = new GridClient();
         client.setServerHost("localhost");
@@ -107,6 +110,16 @@ public class TaskTest {
         List<SuiteTask> suiteTasks = new LinkedList<SuiteTask>();
         task.setSuiteTasks(suiteTasks);
         
+        
+        
         remote.runTask(task);
+    }
+    
+    public static void main(String[] args) throws JsonParseException, JsonMappingException, IOException {
+        String str = "{\"suiteTasks\":[],\"name\":null,\"id\":null,\"taskStatus\":{\"interrupted\":false,\"message\":null,\"status\":0,\"assignedAgent\":null,\"suiteIds\":null,\"suiteId\":null,\"percent\":0,\"taskId\":null,\"completedTests\":[],\"taskName\":null},\"taskUser\":null,\"agentNames\":[\"agent1\"],\"createdDate\":1234567,\"startedDate\":null,\"completedDate\":null}}";
+        str ="{\"name\":\"h\"}";
+        ObjectMapper mapper = new ObjectMapper();
+        
+        mapper.readValue(str, Suite.class);
     }
 }

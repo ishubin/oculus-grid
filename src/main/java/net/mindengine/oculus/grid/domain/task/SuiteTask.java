@@ -46,14 +46,10 @@ public class SuiteTask extends Task {
 		this.projectVersion = projectVersion;
 	}
 
-	@Override
-	public String toString() {
-		return super.toString() + ", suite = {" + suite + "}";
-	}
 	
 	@Override
 	public String type() {
-	    return Task.TYPE_SUITETASK;
+	    return Task.TYPE_DEFAULTTASK;
 	}
 
 }
