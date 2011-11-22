@@ -166,6 +166,7 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
             Collection<TaskWrapper> tasks = this.taskContainer.getTasks().values();
             tasksList = new LinkedList<TaskInformation>();
             for (TaskWrapper taskWrapper : tasks) {
+                
                 tasksList.add(taskWrapper.getTaskInformation());
             }
         } catch (Throwable e) {
