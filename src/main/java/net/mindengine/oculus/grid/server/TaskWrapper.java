@@ -1,6 +1,5 @@
 package net.mindengine.oculus.grid.server;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -32,6 +31,7 @@ public class TaskWrapper {
 	private List<TaskWrapper> children;
 
 	public ReentrantLock taskLock = new ReentrantLock();
+	private TaskWrapper parent;
 
 	public boolean isMultiTask() {
 		if (task instanceof MultiTask) {
@@ -84,14 +84,15 @@ public class TaskWrapper {
 	    info.setTaskUser(getTask().getTaskUser());
 	    info.setType(getTask().type());
 	    
-	    if(children!=null) {
-	        List<TaskInformation> childInfos = new LinkedList<TaskInformation>();
-	        info.setChildTasks(childInfos);
-	        
-	        for(TaskWrapper tw: children) {
-	            childInfos.add(tw.getTaskInformation());
-	        }
+	    if(parent!=null) {
+	        info.setParentId(parent.getId());
 	    }
+	    
+	    if(task instanceof MultiTask) {
+	        MultiTask multiTask = (MultiTask)task;
+	        info.setChildTasksAmount(multiTask.getTasks().size());
+	    }
+	    else info.setChildTasksAmount(0);
 	    return info;
 	}
 
@@ -125,4 +126,12 @@ public class TaskWrapper {
 		}
 		return str.toString();
 	}
+
+    public void setParent(TaskWrapper parent) {
+        this.parent = parent;
+    }
+
+    public TaskWrapper getParent() {
+        return parent;
+    }
 }

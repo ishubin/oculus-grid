@@ -1,7 +1,6 @@
 package net.mindengine.oculus.grid.service;
 
 import java.rmi.Remote;
-import java.util.Collection;
 
 import net.mindengine.jeremy.bin.RemoteFile;
 import net.mindengine.oculus.grid.domain.agent.AgentInformation;
@@ -19,7 +18,7 @@ import net.mindengine.oculus.grid.server.TaskHandler;
 public interface ClientServerRemoteInterface extends Remote {
 
 	/**
-	 * Puts the task in tasks queue so it will be be picked up later by the
+	 * Puts the task in tasks queue so it will be picked up later by the
 	 * {@link TaskHandler}
 	 * 
 	 * @param task
@@ -52,19 +51,13 @@ public interface ClientServerRemoteInterface extends Remote {
 	 */
 	public TaskStatus getTaskStatus(Long taskId) throws Exception;
 
-	/**
-	 * Returns list of all tasks
-	 * 
-	 * @return List of all tasks
-	 */
-	public Collection<TaskInformation> getTasksList();
-
+	
 	/**
 	 * Returns the information about agents.
 	 * 
 	 * @return The list of agents
 	 */
-	public Collection<AgentStatus> getAgents();
+	public AgentStatus[] getAgents();
 
 	/**
 	 * Searches for all user tasks in TRMServer.
@@ -73,7 +66,7 @@ public interface ClientServerRemoteInterface extends Remote {
 	 *            Id of the user
 	 * @return Statuses of the tasks which belongs to the specified user
 	 */
-	public Collection<TaskInformation> getAllUserTasks(Long userId);
+	public TaskInformation[] getAllUserTasks(Long userId);
 
 	/**
 	 * Returns the task by its id
@@ -111,4 +104,11 @@ public interface ClientServerRemoteInterface extends Remote {
 	 * @throws Exception
 	 */
 	public void uploadProject(String projectPath, String version, RemoteFile file) throws Exception;
+
+	/**
+	 * Returns array of tasks which belong to the specified task
+	 * @param parentTaskId Id of parent task. In case if it specified as null then only high-level task will be returned
+	 * @return
+	 */
+    public TaskInformation[] getTasks(Long parentTaskId);
 }

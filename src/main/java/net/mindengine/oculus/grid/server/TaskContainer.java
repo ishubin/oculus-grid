@@ -87,9 +87,8 @@ public class TaskContainer {
 		taskWrapper.setAssignedAgent(null);
 		taskWrapper.getTask().setCompletedDate(new Date());
 		
-		MultiTask parent = task.parent();
-		if (task.parent() != null) {
-			updateMultiTaskStatus(parent);
+		if (taskWrapper.getParent() != null) {
+			updateMultiTaskStatus(taskWrapper.getParent());
 		}
 	}
 
@@ -99,18 +98,17 @@ public class TaskContainer {
 	 * 
 	 * @param multiTask
 	 */
-	private void updateMultiTaskStatus(MultiTask multiTask) {
-		boolean bAllCompleted = true;
+	private void updateMultiTaskStatus(TaskWrapper multiTaskWrapper) {
+	    MultiTask multiTask = (MultiTask) multiTaskWrapper.getTask();
+	    
+	    boolean bAllCompleted = true;
 		for (Task task : multiTask.getTasks()) {
 			if (!task.getTaskStatus().getStatus().equals(TaskStatus.COMPLETED)) {
 				bAllCompleted = false;
 			}
 		}
 		if (bAllCompleted) {
-			TaskWrapper taskWrapper = tasks.get(multiTask.getId());
-			if (taskWrapper != null) {
-				moveTaskToCompletedWithoutLock(taskWrapper);
-			}
+			moveTaskToCompletedWithoutLock(multiTaskWrapper);
 		}
 	}
 
@@ -159,9 +157,10 @@ public class TaskContainer {
 				 * received as null. If we don't do it here - later we will have
 				 * Exception in TRMServer.getAllUserTasks method
 				 */
-				childTask.parent(multiTask);
+				//childTask.parent(multiTask);
 
 				TaskWrapper childTaskWrapper = new TaskWrapper();
+				childTaskWrapper.setParent(taskWrapper);
 				childTaskWrapper.setTask(childTask);
 				registerNewTask(childTaskWrapper);
 				taskWrapper.getChildren().add(childTaskWrapper);

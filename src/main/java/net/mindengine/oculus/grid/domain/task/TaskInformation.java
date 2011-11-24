@@ -1,6 +1,5 @@
 package net.mindengine.oculus.grid.domain.task;
 
-import java.util.List;
 
 
 /**
@@ -11,11 +10,12 @@ import java.util.List;
 public class TaskInformation {
 
     private Long taskId;
+    private Long parentId;
     private String taskName;
     private TaskStatus taskStatus;
     private TaskUser taskUser;
-    private List<TaskInformation> childTasks;
     private String type;
+    private Integer childTasksAmount;
     public Long getTaskId() {
         return taskId;
     }
@@ -24,9 +24,6 @@ public class TaskInformation {
     }
     public TaskStatus getTaskStatus() {
         return taskStatus;
-    }
-    public List<TaskInformation> getChildTasks() {
-        return childTasks;
     }
     public String getType() {
         return type;
@@ -40,9 +37,6 @@ public class TaskInformation {
     public void setTaskStatus(TaskStatus taskStatus) {
         this.taskStatus = taskStatus;
     }
-    public void setChildTasks(List<TaskInformation> childTasks) {
-        this.childTasks = childTasks;
-    }
     public void setType(String type) {
         this.type = type;
     }
@@ -51,6 +45,18 @@ public class TaskInformation {
     }
     public TaskUser getTaskUser() {
         return taskUser;
+    }
+    public void setParentId(Long parentId) {
+        this.parentId = parentId;
+    }
+    public Long getParentId() {
+        return parentId;
+    }
+    public void setChildTasksAmount(Integer childTasksAmount) {
+        this.childTasksAmount = childTasksAmount;
+    }
+    public Integer getChildTasksAmount() {
+        return childTasksAmount;
     }
     
 }

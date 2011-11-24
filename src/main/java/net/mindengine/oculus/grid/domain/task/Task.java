@@ -3,8 +3,6 @@ package net.mindengine.oculus.grid.domain.task;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
-
 
 public abstract class Task implements Serializable {
 	private static final long serialVersionUID = -347244634673235L;
@@ -20,10 +18,6 @@ public abstract class Task implements Serializable {
 	private Date createdDate = new Date();
 	private Date startedDate;
 	private Date completedDate;
-	
-	@JsonIgnore
-	private transient MultiTask parent;
-	
 	
 	public abstract String type();
 	
@@ -64,14 +58,6 @@ public abstract class Task implements Serializable {
 
 	public Long getId() {
 		return id;
-	}
-
-	public void parent(MultiTask parent) {
-		this.parent = parent;
-	}
-
-	public MultiTask parent() {
-		return parent;
 	}
 
 	@Override

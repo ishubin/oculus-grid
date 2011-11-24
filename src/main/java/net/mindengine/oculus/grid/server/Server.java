@@ -159,22 +159,28 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
     }
 
     @Override
-    public Collection<TaskInformation> getTasksList() {
+    public TaskInformation[] getTasks(Long parentTaskId) {
         taskContainer.getTaskLock().lock();
-        Collection<TaskInformation> tasksList = null;
+        ArrayList<TaskInformation> tasksList = null;
         try {
             Collection<TaskWrapper> tasks = this.taskContainer.getTasks().values();
-            tasksList = new LinkedList<TaskInformation>();
+            tasksList = new ArrayList<TaskInformation>();
             for (TaskWrapper taskWrapper : tasks) {
                 
-                tasksList.add(taskWrapper.getTaskInformation());
+                if(parentTaskId == null && (taskWrapper.getParent()==null)) {
+                    tasksList.add(taskWrapper.getTaskInformation());
+                }
+                else if(taskWrapper.getParent()!=null && taskWrapper.getParent().getId().equals(parentTaskId)) {
+                    tasksList.add(taskWrapper.getTaskInformation());
+                }
+                
             }
         } catch (Throwable e) {
             throw runtimeException(e);
         } finally {
             taskContainer.getTaskLock().unlock();
         }
-        return tasksList;
+        return tasksList.toArray(new TaskInformation[]{});
     }
 
     private static RuntimeException runtimeException(Throwable exception) {
@@ -185,22 +191,21 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
     }
 
     @Override
-    public Collection<TaskInformation> getAllUserTasks(Long userId) {
+    public TaskInformation[] getAllUserTasks(Long userId) {
         taskContainer.getTaskLock().lock();
-        Collection<TaskInformation> tasksList = null;
+        ArrayList<TaskInformation> tasksList = null;
         try {
             Collection<TaskWrapper> tasks = taskContainer.getTasks().values();
-            tasksList = new LinkedList<TaskInformation>();
+            tasksList = new ArrayList<TaskInformation>();
             for (TaskWrapper taskWrapper : tasks) {
                 /*
                  * Only parent tasks should be returned to the user as they
                  * contain all their child tasks
                  */
-                if (taskWrapper.getTask().parent() == null) {
+                if (taskWrapper.getParent() == null) {
                     TaskUser taskUser = taskWrapper.getTask().getTaskUser();
                     if (taskUser == null) {
                         throw new NullPointerException("The taskUser is null");
-
                     }
                     if (userId.equals(taskUser.getId())) {
                         if (taskWrapper.getTask() instanceof MultiTask) {
@@ -216,7 +221,7 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
         } finally {
             taskContainer.getTaskLock().unlock();
         }
-        return tasksList;
+        return tasksList.toArray(new TaskInformation[]{});
     }
 
     @Override
@@ -243,9 +248,9 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
     }
 
     @Override
-    public Collection<AgentStatus> getAgents() {
+    public AgentStatus[] getAgents() {
         agentContainer.getAgentLock().lock();
-        Collection<AgentStatus> agentList = null;
+        ArrayList<AgentStatus> agentList = null;
         try {
             Collection<AgentWrapper> agents = agentContainer.getAgents().values();
             agentList = new ArrayList<AgentStatus>();
@@ -261,7 +266,7 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
         } finally {
             agentContainer.getAgentLock().unlock();
         }
-        return agentList;
+        return agentList.toArray(new AgentStatus[]{});
     }
 
     @Override
@@ -305,9 +310,9 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
                 /*
                  * Updating the status of parent task if it exists
                  */
-                MultiTask parentTask = taskWrapper.getTask().parent();
-                if (parentTask != null) {
-                    parentTask.updateTaskStatus();
+                TaskWrapper parentTaskWrapper = taskWrapper.getParent();
+                if (parentTaskWrapper != null) {
+                    ((MultiTask)parentTaskWrapper.getTask()).updateTaskStatus();
                 }
             } catch (Exception e) {
                 throw e;

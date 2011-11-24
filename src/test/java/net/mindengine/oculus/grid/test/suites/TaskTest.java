@@ -2,10 +2,10 @@ package net.mindengine.oculus.grid.test.suites;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,6 +16,7 @@ import net.mindengine.oculus.grid.client.GridClient;
 import net.mindengine.oculus.grid.domain.task.DefaultTask;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
 import net.mindengine.oculus.grid.domain.task.TaskInformation;
+import net.mindengine.oculus.grid.domain.task.TaskStatus;
 import net.mindengine.oculus.grid.server.Server;
 import net.mindengine.oculus.grid.service.ClientServerRemoteInterface;
 import net.mindengine.oculus.grid.service.exceptions.IncorrectTaskException;
@@ -85,13 +86,33 @@ public class TaskTest {
         assertTrue(taskId>0L);
         Thread.sleep(1000);
         
-        Collection<TaskInformation> taskList = remote.getTasksList();
-        assertNotNull(taskList);
-        assertEquals(1, taskList.size());
-        TaskInformation taskInformation = taskList.iterator().next();
-        assertEquals("sample task1", taskInformation.getTaskName());
+        TaskInformation[] tasks = remote.getTasks(null);
+        assertNotNull(tasks);
+        assertEquals(1, tasks.length);
+        assertEquals("sample task1", tasks[0].getTaskName());
+        assertEquals(1, (int)tasks[0].getChildTasksAmount());
+        assertNotNull(tasks[0].getTaskStatus());
+        assertNull(tasks[0].getTaskStatus().getAssignedAgent());
+        assertEquals(TaskStatus.WAITING, tasks[0].getTaskStatus().getStatus());
+        assertNotNull(tasks[0].getTaskId());
         
-        //TODO more verification of task
+        TaskInformation[]childTasks = remote.getTasks(tasks[0].getTaskId());
+        assertNotNull(childTasks);
+        assertEquals(1, childTasks.length);
+        assertEquals("sample suite task", childTasks[0].getTaskName());
+        assertEquals(0, (int)childTasks[0].getChildTasksAmount());
+        assertNotNull(childTasks[0].getTaskStatus());
+        assertNull(childTasks[0].getTaskStatus().getAssignedAgent());
+        assertEquals(TaskStatus.WAITING, childTasks[0].getTaskStatus().getStatus());
+        assertNotNull(childTasks[0].getTaskId());
+        assertEquals(tasks[0].getTaskId(), childTasks[0].getParentId());
+        
+        //TODO verify suite data
+    }
+    
+    @Test
+    public void retrievesOnlyTasksWhichBelongToUser() {
+        //TODO
     }
     
     @Test(expected=IncorrectTaskException.class)
