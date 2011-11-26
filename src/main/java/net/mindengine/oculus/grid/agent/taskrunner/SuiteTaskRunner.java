@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.Random;
 
 import net.mindengine.oculus.experior.suite.XmlSuiteParser;
+import net.mindengine.oculus.grid.agent.AgentProperties;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
 
 import org.apache.commons.logging.Log;
@@ -44,14 +45,10 @@ public class SuiteTaskRunner extends TaskRunner {
 		try {
 			/*
 			 * Creating the java process with all libraries which are needed to
-			 * run the automation project: - All oculus jars
-			 * (test-run-framework, test-run-manager etc.) - All project related
-			 * jars
+			 * run the automation project
 			 */
-
 			SuiteTask task = (SuiteTask) getTask();
 
-			// String projectJarFileName = task.getProjectName()+".jar";
 			String projectFolder = task.getProjectName() + File.separator + task.getProjectName();
 			if (task.getProjectVersion() != null && !task.getProjectVersion().isEmpty()) {
 				projectFolder += "-" + task.getProjectVersion();
@@ -60,12 +57,12 @@ public class SuiteTaskRunner extends TaskRunner {
 				projectFolder += "-current";
 			}
 
-			String projectsLibraryPath = getAgentProperties().getProperty("agent.projects.library");
-			String oculusLibraryPath = getAgentProperties().getProperty("agent.oculus.library");
+			String projectsLibraryPath = getAgentProperties().getProperty(AgentProperties.AGENT_PROJECTS_LIBRARY);
+			String pathToOculusGrid = getAgentProperties().getProperty(AgentProperties.AGENT_OCULUS_GRID_LIBRARY);
 
 			String currentProjectDir = projectsLibraryPath + File.separator + projectFolder;
 
-			String oculusRunnerClasspath = getAgentProperties().getProperty("agent.oculus.runner");
+			String oculusRunnerClasspath = getAgentProperties().getProperty(AgentProperties.AGENT_OCULUS_RUNNER);
 			/*
 			 * Determine separator for java classpath
 			 */
@@ -114,7 +111,14 @@ public class SuiteTaskRunner extends TaskRunner {
 			logger.info("Saving suite to " + file.getAbsolutePath());
 			XmlSuiteParser.saveSuite(task.getSuite(), file);
 
-			String processCommand = "java -classpath " + oculusLibraryPath + File.separator + "*" + jSeparator + currentProjectDir + File.separator + "libs" + File.separator + "*" + jSeparator + currentProjectDir + File.separator + "*" + " " + oculusRunnerClasspath + " " + getAgentProperties().getProperty("agent.host") + " " + getAgentProperties().getProperty("agent.port") + " " + getAgentProperties().getProperty("agent.remoteName")  + " " + suiteFileName;
+			String processCommand = "java -classpath \"" + pathToOculusGrid + jSeparator 
+			    + currentProjectDir + File.separator + "libs" + File.separator + "*" + jSeparator 
+			    + currentProjectDir + File.separator + "*\"" 
+			    + " " + oculusRunnerClasspath 
+			    + " localhost " 
+			    + getAgentProperties().getProperty(AgentProperties.AGENT_PORT) + " " 
+			    + getAgentProperties().getProperty(AgentProperties.AGENT_REMOTE_NAME)  + " " 
+			    + suiteFileName;
 
 			logger.info("Working directory is: " + currentProjectDir);
 			logger.info("Executing the process: \n" + processCommand);

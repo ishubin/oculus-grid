@@ -70,7 +70,7 @@ public class ConnectionTest {
         
         final Agent agent = new Agent();
         Properties properties = new Properties();
-        properties.load(new FileReader(new File(GridUtils.getMandatoryResourceFile(Agent.class, "/agent.properties"))));
+        properties.load(new FileReader(new File(GridUtils.getMandatoryResourceFile(Agent.class, "/grid.agent.properties"))));
         agent.setProperties(properties);
         agent.setAgentHost("localhost");
         agent.setAgentName("Agent");
