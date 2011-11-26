@@ -20,6 +20,16 @@ public class MultiTask extends Task {
 	public List<Task> getTasks() {
 		return tasks;
 	}
+	
+	@Override
+	public void initTask() {
+
+	    if(tasks!=null) {
+	        for(Task task : tasks) {
+	            task.initTask();
+	        }
+	    }
+	}
 
 	/**
 	 * Checks for statuses of the children tasks and updates its own status. If
@@ -34,30 +44,7 @@ public class MultiTask extends Task {
 		boolean hasActive = false;
 		boolean hasCompleted = false;
 
-		String suiteIds = "";
-		Integer percentAverage = 0;
-		boolean bComma = false;
 		for (Task task : tasks) {
-			if (task instanceof MultiTask) {
-				((MultiTask) task).updateTaskStatus();
-				String tmpSuiteIds = ((MultiTask) task).getTaskStatus().getSuiteIds();
-				if (tmpSuiteIds != null && !tmpSuiteIds.isEmpty()) {
-					if (bComma)
-						suiteIds += ",";
-					bComma = true;
-					suiteIds += ((MultiTask) task).getTaskStatus().getSuiteIds();
-				}
-			}
-			else {
-				if (task.getTaskStatus().getSuiteId() != null) {
-					if (bComma)
-						suiteIds += ",";
-					bComma = true;
-					suiteIds += task.getTaskStatus().getSuiteId();
-				}
-			}
-			percentAverage += task.getTaskStatus().getPercent();
-
 			if (TaskStatus.WAITING.equals(task.getTaskStatus().getStatus())) {
 				hasWaiting = true;
 			}
@@ -77,12 +64,9 @@ public class MultiTask extends Task {
 			else
 				getTaskStatus().setStatus(TaskStatus.WAITING);
 		}
-		if (tasks.size() > 0) {
-			percentAverage = percentAverage / tasks.size();
-		}
-		getTaskStatus().setPercent(percentAverage);
-		getTaskStatus().setSuiteIds(suiteIds);
 	}
+	
+	//TODO Task should calculate percent of completion
 
     @Override
     public String type() {

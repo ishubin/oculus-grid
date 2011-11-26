@@ -21,6 +21,10 @@ public abstract class Task implements Serializable {
 	
 	public abstract String type();
 	
+	/**
+	 * Used in order to initialize data on server
+	 */
+	public abstract void initTask();
 	
 	/**
 	 * The list of preferable agent names where the task should be run.

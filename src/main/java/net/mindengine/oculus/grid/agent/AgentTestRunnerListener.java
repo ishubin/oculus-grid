@@ -2,6 +2,7 @@ package net.mindengine.oculus.grid.agent;
 
 import java.rmi.Remote;
 
+import net.mindengine.oculus.grid.domain.task.TestStatus;
 import net.mindengine.oculus.grid.runner.OculusRunner;
 
 /**
@@ -19,7 +20,7 @@ public interface AgentTestRunnerListener extends Remote {
      */
     public Boolean shouldProceed();
     
-	public void onTestStarted(String name, Long id) throws Exception;
+	public void onTestStarted(TestStatus testStatus) throws Exception;
 
 	/**
 	 * Notifies the subscriber that the test action has started
@@ -32,7 +33,7 @@ public interface AgentTestRunnerListener extends Remote {
 	 */
 	public void onTestAction(String name, Integer percent);
 
-	public void onTestFinished(String name, Long id, Integer status);
+	public void onTestFinished(TestStatus testStatus);
 
 	/**
 	 * 

@@ -1,8 +1,6 @@
 package net.mindengine.oculus.grid.domain.task;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 import net.mindengine.oculus.grid.domain.agent.AgentInformation;
 
@@ -24,44 +22,23 @@ public class TaskStatus implements Serializable {
 
 	private boolean interrupted = false;
 	private AgentInformation assignedAgent;
-	/**
-	 * The amount of completion in percents
-	 */
-	private Integer percent = 0;
 
 	private Integer status = 0;
 
-	private List<String> completedTests = new ArrayList<String>();
+	private SuiteInformation suiteInformation;
 	/**
 	 * Message text with task execution details
 	 */
 	private String message;
 	private String taskName;
 
-	/**
-	 * Id of the suite in DB
-	 */
-	private Long suiteId;
-	/**
-	 * List of suite ids separated by comma. This field will be set only in case
-	 * if the current taskStatus belongs to {@link MultiTask}
-	 */
-	private String suiteIds;
-
+	
 	public Long getTaskId() {
 		return taskId;
 	}
 
 	public void setTaskId(Long taskId) {
 		this.taskId = taskId;
-	}
-
-	public Integer getPercent() {
-		return percent;
-	}
-
-	public void setPercent(Integer percent) {
-		this.percent = percent;
 	}
 
 	public void setMessage(String message) {
@@ -80,13 +57,6 @@ public class TaskStatus implements Serializable {
 		return status;
 	}
 
-	public void setCompletedTests(List<String> completedTests) {
-		this.completedTests = completedTests;
-	}
-
-	public List<String> getCompletedTests() {
-		return completedTests;
-	}
 
 	public void setTaskName(String taskName) {
 		this.taskName = taskName;
@@ -112,20 +82,12 @@ public class TaskStatus implements Serializable {
 		return interrupted;
 	}
 
-	public void setSuiteId(Long suiteId) {
-		this.suiteId = suiteId;
-	}
+    public void setSuiteInformation(SuiteInformation suiteInformation) {
+        this.suiteInformation = suiteInformation;
+    }
 
-	public Long getSuiteId() {
-		return suiteId;
-	}
-
-	public void setSuiteIds(String suiteIds) {
-		this.suiteIds = suiteIds;
-	}
-
-	public String getSuiteIds() {
-		return suiteIds;
-	}
+    public SuiteInformation getSuiteInformation() {
+        return suiteInformation;
+    }
 
 }

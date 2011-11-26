@@ -12,6 +12,7 @@ import net.mindengine.oculus.experior.test.descriptors.TestDefinition;
 import net.mindengine.oculus.experior.test.descriptors.TestInformation;
 import net.mindengine.oculus.grid.GridUtils;
 import net.mindengine.oculus.grid.agent.AgentTestRunnerListener;
+import net.mindengine.oculus.grid.domain.task.TestStatus;
 
 /**
  * This can be used as a superclass for all task runners.
@@ -71,7 +72,15 @@ public abstract class OculusRunner implements TestRunListener, SuiteInterruptLis
 	@Override
 	public void onTestFinished(TestInformation testInformation) {
 		try {
-			agentTestRunnerListener.onTestFinished(testInformation.getTestName(), testInformation.getTestDefinition().getCustomId(), testInformation.getStatus());
+		    TestStatus testStatus = new TestStatus();
+		    testStatus.setCustomId(testInformation.getTestDefinition().getCustomId());
+		    testStatus.setName(testInformation.getTestName());
+		    testStatus.setMapping(testInformation.getTestDefinition().getMapping());
+		    testStatus.setDescription(testInformation.getTestDefinition().getDescription());
+		    testStatus.setPhase(TestInformation.PHASE_DONE);
+		    testStatus.setStatus(testInformation.getStatus());
+		    testStatus.setTestRunId(testInformation.getTestRunId());
+			agentTestRunnerListener.onTestFinished(testStatus);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -81,7 +90,14 @@ public abstract class OculusRunner implements TestRunListener, SuiteInterruptLis
 	@Override
 	public void onTestStarted(TestInformation testInformation) {
 		try {
-			agentTestRunnerListener.onTestStarted(testInformation.getTestName(), testInformation.getTestDefinition().getCustomId());
+		    TestStatus testStatus = new TestStatus();
+            testStatus.setCustomId(testInformation.getTestDefinition().getCustomId());
+            testStatus.setName(testInformation.getTestName());
+            testStatus.setMapping(testInformation.getTestDefinition().getMapping());
+            testStatus.setDescription(testInformation.getTestDefinition().getDescription());
+            testStatus.setPhase(TestInformation.PHASE_DONE);
+            testStatus.setStatus(testInformation.getStatus());
+			agentTestRunnerListener.onTestStarted(testStatus);
 		}
 		catch (Exception e) {
 			e.printStackTrace();

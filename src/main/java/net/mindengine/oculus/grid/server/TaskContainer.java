@@ -138,6 +138,7 @@ public class TaskContainer {
 			taskWrapper.setState(TaskWrapper.QUEUED);
 			taskWrapper.getTask().getTaskStatus().setStatus(TaskStatus.WAITING);
 			tasks.put(taskId, taskWrapper);
+			
 		}
 		catch (Throwable e) {
 			taskLock.unlock();
@@ -145,20 +146,11 @@ public class TaskContainer {
 		}
 
 		if (taskWrapper.isMultiTask()) {
-
 			taskLock.unlock();
 			taskWrapper.setChildren(new ArrayList<TaskWrapper>());
 
 			MultiTask multiTask = (MultiTask) taskWrapper.getTask();
 			for (Task childTask : multiTask.getTasks()) {
-				/*
-				 * As we have defined the parent field as transient in Task
-				 * class we need to reset all parent fields here as they were
-				 * received as null. If we don't do it here - later we will have
-				 * Exception in TRMServer.getAllUserTasks method
-				 */
-				//childTask.parent(multiTask);
-
 				TaskWrapper childTaskWrapper = new TaskWrapper();
 				childTaskWrapper.setParent(taskWrapper);
 				childTaskWrapper.setTask(childTask);

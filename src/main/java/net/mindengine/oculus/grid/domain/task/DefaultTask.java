@@ -23,6 +23,15 @@ public class DefaultTask extends Task{
     public List<SuiteTask> getSuiteTasks() {
         return suiteTasks;
     }
+    
+    @Override
+    public void initTask() {
+        if(suiteTasks!=null) {
+            for(SuiteTask suiteTask : suiteTasks) {
+                suiteTask.initTask();
+            }
+        }
+    }
 
     public MultiTask convertToMultiTask() {
         MultiTask task  = new MultiTask();

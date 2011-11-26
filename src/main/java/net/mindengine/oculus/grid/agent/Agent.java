@@ -29,6 +29,7 @@ import net.mindengine.oculus.grid.domain.agent.AgentStatus;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
 import net.mindengine.oculus.grid.domain.task.Task;
 import net.mindengine.oculus.grid.domain.task.TaskStatus;
+import net.mindengine.oculus.grid.domain.task.TestStatus;
 import net.mindengine.oculus.grid.service.AgentServerRemoteInterface;
 import net.mindengine.oculus.grid.service.ServerAgentRemoteInterface;
 
@@ -219,18 +220,11 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	}
 
 	@Override
-	public void onTestFinished(String name, Long id, Integer status) {
-		logger.info(name);
-
-		taskStatus.getCompletedTests().add(name);
-		if (task instanceof SuiteTask) {
-			SuiteTask suiteTask = (SuiteTask) task;
-			int testsAmount = suiteTask.getSuite().getTestsMap().size();
-			if (testsAmount > 0) {
-				taskStatus.setPercent((taskStatus.getCompletedTests().size() * 100) / testsAmount);
-			}
-		}
+	public void onTestFinished(TestStatus testStatus) {
+		logger.info(testStatus.getName());
+		
 		try {
+		    taskStatus.getSuiteInformation().changeTestStatus(testStatus.getCustomId(), testStatus);
 			server.updateTaskStatus(task.getId(), taskStatus);
 		}
 		catch (Exception e) {
@@ -239,16 +233,21 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	}
 
 	@Override
-	public void onTestStarted(String name, Long id) {
-		logger.info(name);
+	public void onTestStarted(TestStatus testStatus) {
+		logger.info(testStatus.getName());
+		try {
+		    taskStatus.getSuiteInformation().changeTestStatus(testStatus.getCustomId(), testStatus);
+		    server.updateTaskStatus(task.getId(), taskStatus);
+		}
+		catch (Exception e) {
+            e.printStackTrace();
+        }
 	}
 
 	@Override
 	public void onTaskFinished(Long suiteId) {
 		logger.info("Task is finished");
 		taskStatus.setStatus(TaskStatus.COMPLETED);
-		taskStatus.setPercent(100);
-		taskStatus.setSuiteId(suiteId);
 		try {
 			server.updateTaskStatus(task.getId(), taskStatus);
 		}

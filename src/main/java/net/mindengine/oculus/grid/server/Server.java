@@ -115,6 +115,7 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
         if(task==null || task.getSuiteTasks()==null || task.getSuiteTasks().size()==0) {
             throw new IncorrectTaskException();
         }
+        task.initTask();
         
         TaskWrapper taskWrapper = new TaskWrapper();
         taskWrapper.setTask(task.convertToMultiTask());

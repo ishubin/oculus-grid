@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.mindengine</groupId>
     <artifactId>oculus-grid</artifactId>
-    <version>0.1.1-SNAPSHOT</version>
+    <version>11.11.1-SNAPSHOT</version>
     <name>Oculus Grid</name>
     
     <dependencies>
@@ -17,13 +17,13 @@
         <dependency>
             <groupId>net.mindengine</groupId>
             <artifactId>jeremy</artifactId>
-            <version>0.2.7-SNAPSHOT</version>
+            <version>11.11.1-SNAPSHOT</version>
         </dependency>
         
         <dependency>
             <groupId>net.mindengine</groupId>
             <artifactId>oculus-experior</artifactId>
-            <version>0.2.5-SNAPSHOT</version>
+            <version>11.11.1-SNAPSHOT</version>
         </dependency>
 
 

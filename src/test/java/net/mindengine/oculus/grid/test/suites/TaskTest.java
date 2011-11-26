@@ -15,8 +15,10 @@ import net.mindengine.oculus.experior.suite.XmlSuiteParser;
 import net.mindengine.oculus.grid.client.GridClient;
 import net.mindengine.oculus.grid.domain.task.DefaultTask;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
+import net.mindengine.oculus.grid.domain.task.Task;
 import net.mindengine.oculus.grid.domain.task.TaskInformation;
 import net.mindengine.oculus.grid.domain.task.TaskStatus;
+import net.mindengine.oculus.grid.domain.task.TestStatus;
 import net.mindengine.oculus.grid.server.Server;
 import net.mindengine.oculus.grid.service.ClientServerRemoteInterface;
 import net.mindengine.oculus.grid.service.exceptions.IncorrectTaskException;
@@ -95,7 +97,9 @@ public class TaskTest {
         assertNull(tasks[0].getTaskStatus().getAssignedAgent());
         assertEquals(TaskStatus.WAITING, tasks[0].getTaskStatus().getStatus());
         assertNotNull(tasks[0].getTaskId());
+        assertEquals(Task.TYPE_MULTITASK, tasks[0].getType());
         
+        //Fetching child tasks
         TaskInformation[]childTasks = remote.getTasks(tasks[0].getTaskId());
         assertNotNull(childTasks);
         assertEquals(1, childTasks.length);
@@ -106,8 +110,23 @@ public class TaskTest {
         assertEquals(TaskStatus.WAITING, childTasks[0].getTaskStatus().getStatus());
         assertNotNull(childTasks[0].getTaskId());
         assertEquals(tasks[0].getTaskId(), childTasks[0].getParentId());
+        assertEquals(Task.TYPE_SUITETASK, childTasks[0].getType());
         
-        //TODO verify suite data
+
+        assertNotNull(childTasks[0].getTaskStatus().getSuiteInformation());
+        assertNotNull(childTasks[0].getTaskStatus().getSuiteInformation().getTests());
+        assertEquals(3, (int)childTasks[0].getTaskStatus().getSuiteInformation().getTests().size());
+        
+        List<TestStatus> tests = childTasks[0].getTaskStatus().getSuiteInformation().getTests();
+        assertEquals("net.mindengine.oculus.experior.samples.Sample2_B", tests.get(0).getMapping());
+        assertEquals(1, (long)tests.get(0).getCustomId());
+        
+        assertEquals("net.mindengine.oculus.experior.samples.Sample2_B", tests.get(1).getMapping());
+        assertEquals(345, (long)tests.get(1).getCustomId());
+        
+        assertEquals("net.mindengine.oculus.experior.samples.Sample2_A", tests.get(2).getMapping());
+        assertEquals(123, (long)tests.get(2).getCustomId());
+        
     }
     
     @Test
