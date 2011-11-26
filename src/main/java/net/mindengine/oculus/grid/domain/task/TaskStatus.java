@@ -1,3 +1,21 @@
+/*******************************************************************************
+ * 2011 Ivan Shubin http://mindengine.net
+ * 
+ * This file is part of MindEngine.net Oculus Grid.
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Oculus Experior.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
 package net.mindengine.oculus.grid.domain.task;
 
 import java.io.Serializable;
@@ -25,6 +43,11 @@ public class TaskStatus implements Serializable {
 
 	private Integer status = 0;
 
+	/**
+	 * Percent of completion from 0.0 to 100.0
+	 */
+	private Float percent = 0.0f;
+	
 	private SuiteInformation suiteInformation;
 	/**
 	 * Message text with task execution details
@@ -88,6 +111,14 @@ public class TaskStatus implements Serializable {
 
     public SuiteInformation getSuiteInformation() {
         return suiteInformation;
+    }
+
+    public void setPercent(Float percent) {
+        this.percent = percent;
+    }
+
+    public Float getPercent() {
+        return percent;
     }
 
 }

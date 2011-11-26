@@ -1,3 +1,21 @@
+/*******************************************************************************
+ * 2011 Ivan Shubin http://mindengine.net
+ * 
+ * This file is part of MindEngine.net Oculus Grid.
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Oculus Experior.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
 package net.mindengine.oculus.grid.agent;
 
 import java.io.BufferedInputStream;
@@ -503,7 +521,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
     public static void main(String[] args) throws Exception {
         Agent agent = new Agent();
         agent.properties = new Properties();
-        agent.properties.load(new FileReader(new File(GridUtils.getMandatoryResourceFile(Agent.class, "/agent.properties"))));
+        agent.properties.load(new FileReader(new File(GridUtils.getMandatoryResourceFile(Agent.class, "/grid.agent.properties"))));
         agent.serverHost = agent.properties.getProperty(AgentProperties.SERVER_HOST);
         agent.serverPort = Integer.parseInt(agent.properties.getProperty(AgentProperties.SERVER_PORT));
         agent.serverName = agent.properties.getProperty(AgentProperties.SERVER_NAME);
