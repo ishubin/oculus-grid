@@ -18,24 +18,14 @@
  ******************************************************************************/
 package net.mindengine.oculus.grid.agent;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
-import net.mindengine.jeremy.bin.RemoteFile;
 import net.mindengine.jeremy.registry.Lookup;
 import net.mindengine.jeremy.registry.Registry;
 import net.mindengine.jeremy.starter.RegistryStarter;
@@ -51,7 +41,6 @@ import net.mindengine.oculus.grid.domain.task.TestStatus;
 import net.mindengine.oculus.grid.service.AgentServerRemoteInterface;
 import net.mindengine.oculus.grid.service.ServerAgentRemoteInterface;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -77,9 +66,6 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	private Task task;
 	private TaskStatus taskStatus;
 	private AgentId agentId = null;
-
-	private ReentrantLock uploadProjectsLock = new ReentrantLock();
-	private Collection<UploadProjectData> uploadProjects = new LinkedList<UploadProjectData>();
 	
 	private String serverName;
 	private String serverHost;
@@ -147,40 +133,12 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 		System.exit(0);
 	}
 
-	/**
-	 * Checks whether there are projects to be uploaded in the list and
-	 * uploads them
-	 */
-	public void checkUploadedProjects() {
-		uploadProjectsLock.lock();
-		try{
-			Iterator<UploadProjectData> it = uploadProjects.iterator();
-			while(it.hasNext()){
-				UploadProjectData upd = it.next();
-				uploadProjectToSystem(upd);
-				it.remove();
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		finally{
-			uploadProjectsLock.unlock();
-		}
-	}
-
 	@Override
 	public void runSuiteTask(SuiteTask task) throws Exception {
+	    
+	    //TODO Add check if project is here and has the same control key, if not - download it form server 
 	    shouldCurrentTaskProceed = true;
 	    
-		/*
-		 * Checking if there are any projects that should be uploaded. Doing
-		 * this here because for now it is the only safe place to upload
-		 * project. If we try to do it on the task completion it will not be
-		 * possible to remove {project}-{version}.jar file as it still will be
-		 * used for few seconds by oculus runner
-		 */
-		checkUploadedProjects();
 
 		this.task = task;
 		logger.info("Running task " + task);
@@ -327,56 +285,6 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 		startConnection();
 	}
 
-	public void uploadProjectToSystem(UploadProjectData upd) throws Exception {
-		logger.info("Uploading project content: " + upd.getPath() + " version: " + upd.getVersion());
-		String projectLibraryPath = properties.getProperty(AgentProperties.AGENT_PROJECTS_LIBRARY);
-		File projectDir = new File(projectLibraryPath + File.separator + upd.getPath());
-		if (!projectDir.exists()) {
-			projectDir.mkdir();
-		}
-
-		File projectVersionDir = new File(projectLibraryPath + File.separator + upd.getPath() + File.separator + upd.getPath() + "-" + upd.getVersion());
-
-		if (projectVersionDir.exists()) {
-			FileUtils.deleteDirectory(projectVersionDir);
-		}
-		projectVersionDir.mkdir();
-
-		extractZip(upd, projectVersionDir.getAbsolutePath());
-	}
-
-	@Override
-	public void uploadProject(String projectPath, String version, RemoteFile file) throws Exception {
-		/*
-		 * First will have to check that the agent is not running right now.
-		 * Only when the agent is free - it is possible to upload project.
-		 */
-		logger.info("Received project content: " + projectPath + " version: " + version);
-		UploadProjectData upd = new UploadProjectData(projectPath, version);
-
-		saveZip("temp_" + upd.getPath() + "_" + upd.getVersion() + ".zip", file.getBytes());
-
-		if (getAgentStatus().getState() == AgentStatus.FREE) {
-			uploadProjectToSystem(upd);
-		}
-		else {
-			logger.info("Agent is busy. Project upload is postponed");
-			uploadProjectsLock.lock();
-			try {
-				if (!uploadProjects.contains(upd)) {
-					uploadProjects.add(upd);
-				}
-			}
-			catch (Exception e) {
-				throw e;
-			}
-			finally {
-				uploadProjectsLock.unlock();
-			}
-
-		}
-	}
-
 	public static void saveZip(String path, byte[] bytes) throws IOException {
 		File fileTemp = new File(path);
 		if (fileTemp.exists()) {
@@ -390,45 +298,14 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 		fos.close();
 	}
 
-	public static void extractZip(UploadProjectData upd, String dirPath) throws IOException {
-		ZipFile zipFile = new ZipFile("temp_" + upd.getPath() + "_" + upd.getVersion() + ".zip");
-		Enumeration<? extends ZipEntry> entries = zipFile.entries();
-
-		while (entries.hasMoreElements()) {
-			ZipEntry entry = entries.nextElement();
-			File file = new File(dirPath + File.separator + entry.getName());
-			if (entry.isDirectory()) {
-				file.mkdir();
-			}
-			else {
-				file.createNewFile();
-				FileOutputStream fos = new FileOutputStream(file);
-				int size = 2048;
-				byte[] buffer = new byte[size];
-
-				BufferedInputStream bis = new BufferedInputStream(zipFile.getInputStream(entry));
-				BufferedOutputStream bos = new BufferedOutputStream(fos, buffer.length);
-				while ((size = bis.read(buffer, 0, buffer.length)) != -1) {
-					bos.write(buffer, 0, size);
-				}
-				bos.flush();
-				bos.close();
-				fos.close();
-				bis.close();
-			}
-
-			System.out.println(entry.getName());
-		}
-	}
-	
+		
 	public void stopAgent() throws Exception {
 	    agentConnectionChecker.stopConnectionChecker();
 	    registry.stop();
 	}
 	
 	public void startAgent() throws Exception {
-	    verifyResource(properties, AgentProperties.AGENT_PROJECTS_LIBRARY);
-        
+	    
         Lookup lookup = GridUtils.createDefaultLookup();
         lookup.setUrl("http://"+serverHost+":"+serverPort);
         

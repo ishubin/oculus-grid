@@ -22,13 +22,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Properties;
 
 import net.mindengine.jeremy.bin.RemoteFile;
 import net.mindengine.jeremy.registry.Lookup;
 import net.mindengine.jeremy.registry.Registry;
+import net.mindengine.oculus.grid.GridProperties;
 import net.mindengine.oculus.grid.GridUtils;
 import net.mindengine.oculus.grid.console.ConsoleCommandScanner;
 import net.mindengine.oculus.grid.domain.agent.AgentId;
@@ -43,6 +42,8 @@ import net.mindengine.oculus.grid.service.AgentServerRemoteInterface;
 import net.mindengine.oculus.grid.service.ClientServerRemoteInterface;
 import net.mindengine.oculus.grid.service.ServerAgentRemoteInterface;
 import net.mindengine.oculus.grid.service.exceptions.IncorrectTaskException;
+import net.mindengine.oculus.grid.storage.DefaultGridStorage;
+import net.mindengine.oculus.grid.storage.Storage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,7 +59,7 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
 
 
     private Log logger = LogFactory.getLog(getClass());
-
+    private Storage storage;
     private TaskContainer taskContainer = new TaskContainer();
     private AgentContainer agentContainer = new AgentContainer();
     private AgentHandler agentHandler = new AgentHandler();
@@ -349,6 +350,8 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
          */
         logger.info("Creating server on port: " + port);
         
+        
+        
         if (serverName == null || serverName.isEmpty()) {
             throw new Exception("Name of server is not specified");
         }
@@ -378,6 +381,11 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
             server.setStoreCompletedTasksTime(Long.parseLong(strStoreCompletedTasksTime));
         }
         String serverName = properties.getProperty(ServerProperties.SERVER_NAME);
+        
+        //Setting a storage to handle project synchronization
+        DefaultGridStorage storage = new DefaultGridStorage();
+        storage.setStoragePath(properties.getProperty(GridProperties.STORAGE_PATH));
+        server.setStorage(storage);
         
         server.startServer(port, serverName);
     }
@@ -412,26 +420,7 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
 
     @Override
     public void uploadProject(String projectPath, String version, RemoteFile file) throws Exception {
-        List<AgentWrapper> agentList = new LinkedList<AgentWrapper>();
-        /*
-         * Collecting agent to another list in order to avoid thread problems
-         */
-        agentContainer.getAgentLock().lock();
-        for (AgentWrapper agetWrapper : agentContainer.getAgents().values()) {
-            agentList.add(agetWrapper);
-        }
-        agentContainer.getAgentLock().unlock();
-
-        /*
-         * Uploading the project to each agent
-         */
-        for (AgentWrapper agentWrapper : agentList) {
-            try {
-                agentWrapper.getAgentRemoteInterface().uploadProject(projectPath, version, file);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        //TODO implement saving project to storage
     }
 
     @Override
@@ -445,6 +434,14 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
 
     public Long getStoreCompletedTasksTime() {
         return storeCompletedTasksTime;
+    }
+
+    public Storage getStorage() {
+        return storage;
+    }
+
+    public void setStorage(Storage storage) {
+        this.storage = storage;
     }
 
     // TODO implement versioning for projects. So when the agent has to execute

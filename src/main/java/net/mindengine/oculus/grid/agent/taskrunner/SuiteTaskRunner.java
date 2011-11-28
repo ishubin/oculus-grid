@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.Random;
 
 import net.mindengine.oculus.experior.suite.XmlSuiteParser;
+import net.mindengine.oculus.grid.GridProperties;
 import net.mindengine.oculus.grid.agent.AgentProperties;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
 
@@ -57,10 +58,10 @@ public class SuiteTaskRunner extends TaskRunner {
 				projectFolder += "-current";
 			}
 
-			String projectsLibraryPath = getAgentProperties().getProperty(AgentProperties.AGENT_PROJECTS_LIBRARY);
+			String storagePath = getAgentProperties().getProperty(GridProperties.STORAGE_PATH);
 			String pathToOculusGrid = getAgentProperties().getProperty(AgentProperties.AGENT_OCULUS_GRID_LIBRARY);
 
-			String currentProjectDir = projectsLibraryPath + File.separator + projectFolder;
+			String currentProjectDir = storagePath + File.separator + projectFolder;
 
 			String oculusRunnerClasspath = getAgentProperties().getProperty(AgentProperties.AGENT_OCULUS_RUNNER);
 			/*

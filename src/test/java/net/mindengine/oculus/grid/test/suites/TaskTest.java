@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,6 +37,7 @@ import net.mindengine.oculus.grid.domain.task.SuiteTask;
 import net.mindengine.oculus.grid.domain.task.Task;
 import net.mindengine.oculus.grid.domain.task.TaskInformation;
 import net.mindengine.oculus.grid.domain.task.TaskStatus;
+import net.mindengine.oculus.grid.domain.task.TaskUser;
 import net.mindengine.oculus.grid.domain.task.TestStatus;
 import net.mindengine.oculus.grid.server.Server;
 import net.mindengine.oculus.grid.service.ClientServerRemoteInterface;
@@ -84,22 +86,7 @@ public class TaskTest {
         
         assertNotNull(remote);
         
-        DefaultTask task = new DefaultTask();
-        task.setName("sample task1");
-        
-        task.setAgentNames(new String[]{"agent1"});
-        task.setCreatedDate(new Date(1234567));
-        
-        List<SuiteTask> suiteTasks = new LinkedList<SuiteTask>();
-        SuiteTask suiteTask = new SuiteTask();
-        suiteTasks.add(suiteTask);
-        
-        suiteTask.setAgentNames(new String[]{"agent2", "agent3"});
-        suiteTask.setName("sample suite task");
-        
-        Suite suite = XmlSuiteParser.parse(new File(getClass().getResource("/sample-suite.xml").toURI()));
-        suiteTask.setSuite(suite);
-        task.setSuiteTasks(suiteTasks);
+        DefaultTask task = createBasicTask();
         
         Long taskId = remote.runTask(task);
         assertNotNull(taskId);
@@ -147,9 +134,55 @@ public class TaskTest {
         
     }
     
+    public DefaultTask createBasicTask() throws URISyntaxException, Exception {
+        DefaultTask task = new DefaultTask();
+        task.setName("sample task1");
+        
+        task.setAgentNames(new String[]{"agent1"});
+        task.setCreatedDate(new Date(1234567));
+        
+        List<SuiteTask> suiteTasks = new LinkedList<SuiteTask>();
+        SuiteTask suiteTask = new SuiteTask();
+        suiteTasks.add(suiteTask);
+        
+        suiteTask.setAgentNames(new String[]{"agent2", "agent3"});
+        suiteTask.setName("sample suite task");
+        
+        Suite suite = XmlSuiteParser.parse(new File(getClass().getResource("/sample-suite.xml").toURI()));
+        suiteTask.setSuite(suite);
+        task.setSuiteTasks(suiteTasks);
+        return task;
+    }
+    
     @Test
-    public void retrievesOnlyTasksWhichBelongToUser() {
-        //TODO
+    public void retrievesOnlyTasksWhichBelongToUser() throws URISyntaxException, Exception {
+        DefaultTask task1 = createBasicTask();
+        DefaultTask task2 = createBasicTask();
+        task1.setName("Task 1");
+        task1.setTaskUser(new TaskUser(2L, "test user1"));
+        task2.setName("Task 2");
+        task2.setTaskUser(new TaskUser(3L, "test user2"));
+        
+        Long task1Id = server.runTask(task1);
+        Long task2Id = server.runTask(task2);
+        
+        TaskInformation[] tasks1 = server.getAllUserTasks(2L);
+        TaskInformation[] tasks2 = server.getAllUserTasks(3L);
+        
+        assertNotNull(tasks1);
+        assertEquals(1, tasks1.length);
+        assertEquals("Task 1", tasks1[0].getTaskName());
+        assertEquals(task1Id, tasks1[0].getTaskId());
+        assertEquals(2L, (long)tasks1[0].getTaskUser().getId());
+        assertEquals("test user1", tasks1[0].getTaskUser().getName());
+        
+        
+        assertNotNull(tasks2);
+        assertEquals(1, tasks2.length);
+        assertEquals("Task 2", tasks2[0].getTaskName());
+        assertEquals(task2Id, tasks2[0].getTaskId());
+        assertEquals(3L, (long)tasks2[0].getTaskUser().getId());
+        assertEquals("test user2", tasks2[0].getTaskUser().getName());
     }
     
     @Test(expected=IncorrectTaskException.class)

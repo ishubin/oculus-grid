@@ -20,7 +20,6 @@ package net.mindengine.oculus.grid.service;
 
 import java.rmi.Remote;
 
-import net.mindengine.jeremy.bin.RemoteFile;
 import net.mindengine.oculus.grid.agent.Agent;
 import net.mindengine.oculus.grid.domain.agent.AgentStatus;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
@@ -66,14 +65,4 @@ public interface ServerAgentRemoteInterface extends Remote {
 	 */
 	public void killAgent() throws Exception;
 
-	/**
-	 * Uploads zip archive with projects content and extracts it to the projects
-	 * folder
-	 * 
-	 * @param projectPath
-	 * @param version
-	 * @param zippedContent
-	 * @throws Exception
-	 */
-	public void uploadProject(String projectPath, String version, RemoteFile file) throws Exception;
 }

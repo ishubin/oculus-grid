@@ -31,7 +31,17 @@ public class TaskUser implements Serializable {
 	private Long id;
 	private String name;
 
-	public Long getId() {
+	
+	public TaskUser() {
+	}
+	
+	public TaskUser(Long id, String name) {
+        super();
+        this.id = id;
+        this.name = name;
+    }
+
+    public Long getId() {
 		return id;
 	}
 
