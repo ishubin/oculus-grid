@@ -64,5 +64,6 @@ public interface ServerAgentRemoteInterface extends Remote {
 	 * @throws Exception
 	 */
 	public void killAgent() throws Exception;
-
+	
+	
 }

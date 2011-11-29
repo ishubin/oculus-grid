@@ -28,6 +28,7 @@ import net.mindengine.oculus.experior.suite.XmlSuiteParser;
 import net.mindengine.oculus.grid.GridProperties;
 import net.mindengine.oculus.grid.agent.AgentProperties;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
+import net.mindengine.oculus.grid.storage.Project;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,6 +42,11 @@ import org.apache.commons.logging.LogFactory;
 public class SuiteTaskRunner extends TaskRunner {
 	private Log logger = LogFactory.getLog(getClass());
 
+	public void downloadProjectFromServer(String projectName, String version) {
+	    
+	}
+	
+	
 	@Override
 	public void run() {
 		try {
@@ -49,6 +55,12 @@ public class SuiteTaskRunner extends TaskRunner {
 			 * run the automation project
 			 */
 			SuiteTask task = (SuiteTask) getTask();
+			
+			if(getProjectSyncNeeded()) {
+			    Project project = getAgent().getServer().downloadProject(task.getProjectName(), task.getProjectVersion());
+			    getAgent().getStorage().putProjectZip(task.getProjectName(), task.getProjectVersion(), project.getBytes(), "agent", project.getControlKey());
+			}
+			
 
 			String projectFolder = task.getProjectName() + File.separator + task.getProjectName();
 			if (task.getProjectVersion() != null && !task.getProjectVersion().isEmpty()) {
@@ -144,8 +156,8 @@ public class SuiteTaskRunner extends TaskRunner {
 			 */
 			file.delete();
 		}
-		catch (Throwable e) {
-			e.printStackTrace();
+		catch (Throwable error) {
+			getAgent().onTaskError(error);
 		}
 	}
 }

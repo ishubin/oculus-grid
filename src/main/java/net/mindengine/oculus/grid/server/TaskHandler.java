@@ -49,6 +49,7 @@ public class TaskHandler extends Thread {
 				 * Locking all tasks and agents entities to prevent threads
 				 * interruption
 				 */
+				//TODO Server should check if there is a project in storage and it can actually execute the task, if not - it should give a status to task like "NO_PROJECT_IN_STORAGE" 
 				taskContainer.getTaskLock().lock();
 				agentContainer.getAgentLock().lock();
 				try {
@@ -87,6 +88,9 @@ public class TaskHandler extends Thread {
 
 	private void assignTaskToAgent(TaskWrapper task, AgentWrapper agent) throws Exception {
 	    if(task.getTask() instanceof SuiteTask) {
+	        
+	        
+	        //TODO Handle situation when agent throws IncorrectTaskException
     		agent.getAgentRemoteInterface().runSuiteTask((SuiteTask)task.getTask());
     		agent.setStatus(AgentWrapper.BUSY);
     		agent.setAssignedTask(task);

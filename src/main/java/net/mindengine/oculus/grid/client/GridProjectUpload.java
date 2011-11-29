@@ -21,20 +21,19 @@ package net.mindengine.oculus.grid.client;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 
 import net.mindengine.jeremy.bin.RemoteFile;
+import net.mindengine.jeremy.registry.Lookup;
 import net.mindengine.oculus.grid.service.ClientServerRemoteInterface;
 
 public class GridProjectUpload {
-	public static void upload(String serverHost, String serverName, int serverPort, String zipFilePath, String projectName, String projectVersion) throws Exception {
-		String serverAddress = "rmi://" + serverHost + "/" + serverName;
+	public static void upload(String serverHost, String serverName, Integer serverPort, String zipFilePath, String projectName, String projectVersion, String userName) throws Exception {
 		System.out.println("Locating registry " + serverHost + " port " + serverPort);
-		Registry registry = LocateRegistry.getRegistry(serverHost, serverPort);
-		System.out.println("Looking for " + serverAddress);
-
-		ClientServerRemoteInterface server = (ClientServerRemoteInterface) registry.lookup(serverAddress);
+		
+		System.out.println("Looking for server...");
+		Lookup lookup = new Lookup("http://"+serverHost+":"+serverPort);
+		ClientServerRemoteInterface server = lookup.getRemoteObject(serverName, ClientServerRemoteInterface.class);
+		 
 		if (server == null)
 			throw new Exception("The server wasn't found");
 
@@ -47,17 +46,35 @@ public class GridProjectUpload {
 		RemoteFile remoteFile = new RemoteFile();
 		remoteFile.setBytes(buffer);
 		remoteFile.setName(file.getName());
-		server.uploadProject(projectName, projectVersion, remoteFile);
+		server.uploadProject(projectName, projectVersion, remoteFile, userName);
 	}
 
+	public static String getArgument(String name, String [] args, boolean mandatory, String description) {
+	    for(int i=0;i<args.length;i++) {
+	        if(args[i].equals(name)) {
+	            int j = i+1;
+	            if(j<args.length) {
+	                return args[j];
+	            }
+	        }
+	    }
+	    
+	    if(mandatory) {
+	        throw new IllegalArgumentException(name+" ("+description+") argument is not defined");
+	    }
+	    return null;
+	}
+	
 	public static void main(String[] args) throws Exception {
-		String serverHost = args[0];
-		int serverPort = Integer.parseInt(args[1]);
-		String serverName = args[2];
-		String zipFilePath = args[3];
-		String projectName = args[4];
-		String projectVersion = args[5];
-
-		upload(serverHost, serverName, serverPort, zipFilePath, projectName, projectVersion);
+	    
+	    String serverHost = getArgument("-h", args, true, "server remote host");
+		Integer serverPort = Integer.parseInt(getArgument("-p", args, true, "server remote port"));
+		String serverName = getArgument("-n", args, true, "server remote name");
+		String zipFilePath = getArgument("-f", args, true, "path to zip archive");
+		String projectName = getArgument("-p", args, true, "project name");
+		String projectVersion = getArgument("-v", args, true, "project version");
+		String userName = getArgument("-u", args, false, null);
+		
+		upload(serverHost, serverName, serverPort, zipFilePath, projectName, projectVersion, userName);
 	}
 }

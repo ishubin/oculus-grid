@@ -35,6 +35,7 @@ import net.mindengine.oculus.grid.domain.agent.AgentInformation;
 import net.mindengine.oculus.grid.domain.agent.AgentStatus;
 import net.mindengine.oculus.grid.domain.task.DefaultTask;
 import net.mindengine.oculus.grid.domain.task.MultiTask;
+import net.mindengine.oculus.grid.domain.task.SuiteTask;
 import net.mindengine.oculus.grid.domain.task.TaskInformation;
 import net.mindengine.oculus.grid.domain.task.TaskStatus;
 import net.mindengine.oculus.grid.domain.task.TaskUser;
@@ -43,6 +44,7 @@ import net.mindengine.oculus.grid.service.ClientServerRemoteInterface;
 import net.mindengine.oculus.grid.service.ServerAgentRemoteInterface;
 import net.mindengine.oculus.grid.service.exceptions.IncorrectTaskException;
 import net.mindengine.oculus.grid.storage.DefaultGridStorage;
+import net.mindengine.oculus.grid.storage.Project;
 import net.mindengine.oculus.grid.storage.Storage;
 
 import org.apache.commons.logging.Log;
@@ -134,6 +136,16 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
         if(task==null || task.getSuiteTasks()==null || task.getSuiteTasks().size()==0) {
             throw new IncorrectTaskException();
         }
+        
+        for(SuiteTask suiteTask : task.getSuiteTasks()) {
+            if(suiteTask.getProjectName()==null || suiteTask.getProjectName().isEmpty()){
+                throw new IncorrectTaskException("Project name is not specified");
+            }
+            if(suiteTask.getProjectVersion()==null || suiteTask.getProjectVersion().isEmpty()){
+                throw new IncorrectTaskException("Project version is not specified");
+            }
+        }
+        
         task.initTask();
         
         TaskWrapper taskWrapper = new TaskWrapper();
@@ -368,6 +380,40 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
         registry.stop();
     }
     
+    @Override
+    public AgentInformation getAgent(Long id) {
+        logger.info("Searching for agent: " + id);
+        agentContainer.getAgentLock().lock();
+        AgentWrapper agentWrapper = agentContainer.getAgents().get(id);
+        agentContainer.getAgentLock().unlock();
+
+        if (agentWrapper != null) {
+            return agentWrapper.getAgentInformation();
+        }
+
+        return null;
+    }
+
+    @Override
+    public void uploadProject(String projectPath, String version, RemoteFile file, String userName) throws Exception {
+        storage.putProjectZip(projectPath, version, file.getBytes(), userName, null);
+    }
+
+    @Override
+    public String checkConnection() throws Exception {
+        return "OK";
+    }
+    
+    @Override
+    public String getProjectControlCode(String projectName, String version) throws Exception {
+        return getStorage().readProjectControlKey(projectName, projectName);
+    }
+    
+    @Override
+    public Project downloadProject(String projectName, String projectVersion) throws Exception {
+        return storage.downloadProjectFromStorage(projectName, projectVersion);
+    }
+    
     public static void main(String[] args) throws Exception {
         Server server = new Server();
         
@@ -404,29 +450,7 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
         return agentContainer;
     }
 
-    @Override
-    public AgentInformation getAgent(Long id) {
-        logger.info("Searching for agent: " + id);
-        agentContainer.getAgentLock().lock();
-        AgentWrapper agentWrapper = agentContainer.getAgents().get(id);
-        agentContainer.getAgentLock().unlock();
-
-        if (agentWrapper != null) {
-            return agentWrapper.getAgentInformation();
-        }
-
-        return null;
-    }
-
-    @Override
-    public void uploadProject(String projectPath, String version, RemoteFile file) throws Exception {
-        //TODO implement saving project to storage
-    }
-
-    @Override
-    public String checkConnection() throws Exception {
-        return "OK";
-    }
+    
 
     public void setStoreCompletedTasksTime(Long storeCompletedTasksTime) {
         this.storeCompletedTasksTime = storeCompletedTasksTime;
@@ -443,13 +467,4 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
     public void setStorage(Storage storage) {
         this.storage = storage;
     }
-
-    // TODO implement versioning for projects. So when the agent has to execute
-    // task for project which it doesn't have - it download all needed data
-    /*
-     * As users could update same versions of project - we need to implement
-     * some kind of custom generated keys which will identify the projects. If
-     * agent has a key other than a server - it will download whole project from
-     * server and only after will start executing task
-     */
 }

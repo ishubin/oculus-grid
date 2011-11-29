@@ -3,6 +3,7 @@ package net.mindengine.oculus.grid.storage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -11,26 +12,27 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import net.mindengine.oculus.grid.threads.ParametrizedThreadLock;
 
 import org.apache.commons.io.FileUtils;
 
 public class DefaultGridStorage implements Storage {
-
-    /**
-     * Path to storage on file system 
-     */
-    private String storagePath;
-    
     private static final String _GRIDPROJECT = ".gridproject".intern();
     private static final String PROJECT_NAME = "project.name".intern();
     private static final String PROJECT_VERSION = "project.version".intern();
     private static final String CONTROL_KEY = "control.key".intern();
     private static final String UPLOAD_DATE = "upload.date".intern();
     private static final String UPLOAD_USER = "upload.user".intern();
+
+    /**
+     * Path to storage on file system 
+     */
+    private String storagePath;
     
+    private ParametrizedThreadLock lock = new ParametrizedThreadLock();
     
     private static void appendProperty(StringBuffer buffer, String name, String value) {
         buffer.append(name);
@@ -53,17 +55,20 @@ public class DefaultGridStorage implements Storage {
         FileUtils.writeStringToFile(file, buff.toString(), "UTF-8");
     }
     
+    protected String getPathToProjectZip(String name, String version) {
+        StringBuffer path = new StringBuffer(getPathToProject(name, version));
+        path.append(File.separator);
+        path.append(name);
+        path.append("-");
+        path.append(version);
+        path.append(".zip");
+        return path.toString();
+    }
+    
     @Override
-    public String putProjectZip(String name, String version, byte[] content, String user) throws Exception{
-        //TODO Implement thread lock based on name and version
-        StringBuffer buff = new StringBuffer(name);
-        buff.append("-");
-        buff.append(version);
-        
-        String synchronizedKey = buff.toString().intern();
-        
-        synchronized(synchronizedKey) {
-        
+    public String putProjectZip(final String name, final String version, byte[] content, String user, String controlKey) throws Exception{
+        lock.lock(name, version);
+        try {
             String pathToProject = getPathToProject(name, version);
             File file = new File(pathToProject);
             if(!file.exists()) {
@@ -74,18 +79,84 @@ public class DefaultGridStorage implements Storage {
                 throw new RuntimeException("Cannot upload project, given path is not a directory: "+file.getAbsolutePath());
             }
             
-            StringBuffer path = new StringBuffer(pathToProject);
-            path.append(File.separator);
-            path.append(name);
-            path.append("-");
-            path.append(version);
-            path.append(".zip");
-            FileUtils.writeByteArrayToFile(new File(pathToProject.toString()), content);
+            FileUtils.writeByteArrayToFile(new File(getPathToProjectZip(name, version)), content);
             
-            String controlKey = generateControlKey();
+            controlKey = generateControlKey();
             writeGridProject(pathToProject, name, version, controlKey, new Date(), user);
-            return controlKey;
         }
+        catch (Exception e) {
+            throw e;
+        }
+        finally {
+            lock.unlock(name, version);
+        }
+        return controlKey;
+    }
+    
+    
+    private String fetchProjectControlKey(String name, String version) throws Exception{
+        File file = new File(getPathToGridProjectfile(name, version));
+        if(file.exists()) {
+            Properties properties = new Properties();
+            try {
+                properties.load(new FileReader(file));
+                String controlKey = (String) properties.get(CONTROL_KEY);
+                if(controlKey!=null) {
+                    controlKey = controlKey.trim();
+                }
+                return controlKey;
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+    
+    @Override
+    public String readProjectControlKey(final String name, final String version) throws Exception{
+        lock.lock(name, version);
+        String controlKey = null;
+        try {
+            controlKey = fetchProjectControlKey(name, version);
+        }
+        catch (Exception e) {
+            throw e;
+        }
+        finally {
+            lock.unlock(name, version);
+        }
+        return controlKey;
+    }
+    
+    @Override
+    public Project downloadProjectFromStorage(final String name, final String version) throws Exception {
+        lock.lock(name, version);
+        Project project = null;
+        try {
+            File file = new File(getPathToProjectZip(name, version));
+            if(!file.exists()) {
+                throw new FileNotFoundException("File for project '"+name+"' with version '"+version+"' is not found");
+            }
+            
+            project = new Project();
+            project.setBytes(FileUtils.readFileToByteArray(file));
+            project.setName(name+"-"+version+".zip");
+            project.setProjectName(name);
+            project.setProjectVersion(version);
+            project.setControlKey(fetchProjectControlKey(name, version));
+        }
+        catch (Exception e) {
+            throw e;
+        }
+        finally{
+            lock.unlock(name, version);
+        }
+        return project;
+    }
+    
+    protected ParametrizedThreadLock lock() {
+        return lock;
     }
     
     public static String generateControlKey() {
@@ -130,9 +201,6 @@ public class DefaultGridStorage implements Storage {
                     fos.close();
                     bis.close();
                 }
-    
-                //TODO remove println
-                System.out.println(entry.getName());
             }
         }
         catch (Exception e) {
@@ -142,28 +210,6 @@ public class DefaultGridStorage implements Storage {
             tempFile.delete();
         }
     }
-
-
-    @Override
-    public String readProjectControlKey(String name, String version) {
-        File file = new File(getPathToGridProjectfile(name, version));
-        if(file.exists()) {
-            Properties properties = new Properties();
-            try {
-                properties.load(new FileReader(file));
-                String controlKey = (String) properties.get(CONTROL_KEY);
-                if(controlKey!=null) {
-                    return controlKey.trim();
-                }
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-        }
-        return null;
-    }
-    
     
     public String getPathToGridProjectfile(String name, String version) {
         StringBuffer path = new StringBuffer(getPathToProject(name, version));

@@ -23,6 +23,7 @@ import java.rmi.Remote;
 import net.mindengine.oculus.grid.domain.agent.AgentId;
 import net.mindengine.oculus.grid.domain.agent.AgentInformation;
 import net.mindengine.oculus.grid.domain.task.TaskStatus;
+import net.mindengine.oculus.grid.storage.Project;
 
 /**
  * Implemented by Test Run Manager Server and specifies the messages from
@@ -65,9 +66,27 @@ public interface AgentServerRemoteInterface extends Remote {
     public AgentId registerAgent(AgentInformation agentInformation, AgentId previousId) throws Exception;
 
     /**
-     * Used to check the connection with TRMServer
+     * Used to check the connection with Server
      * 
      * @return
      */
     public String checkConnection() throws Exception;
+    
+    /**
+     * Looks for the project in storage and returns its latest control key, so the agent can check if theirs projects data is synchronized
+     * @param projectName Name of project
+     * @param version Version of project
+     * @return Control key of the specified project in storage. In case if the project wasn't uploaded at - it returns null.
+     * @throws Exception 
+     */
+    public String getProjectControlCode(String projectName, String version) throws Exception;
+
+    /**
+     * Returns project zipped data
+     * @param projectName
+     * @param projectVersion
+     * @return
+     * @throws Exception 
+     */
+    public Project downloadProject(String projectName, String projectVersion) throws Exception;
 }

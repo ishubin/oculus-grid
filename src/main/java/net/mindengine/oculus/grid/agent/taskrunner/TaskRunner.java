@@ -40,6 +40,7 @@ public abstract class TaskRunner extends Thread {
 	private TaskStatus taskStatus;
 	private Properties agentProperties;
 	private Agent agent;
+	private Boolean projectSyncNeeded = false;
 
 	protected TaskRunner() {
 
@@ -87,4 +88,12 @@ public abstract class TaskRunner extends Thread {
 	public Agent getAgent() {
 		return agent;
 	}
+
+    public Boolean getProjectSyncNeeded() {
+        return projectSyncNeeded;
+    }
+
+    public void setProjectSyncNeeded(Boolean projectSyncNeeded) {
+        this.projectSyncNeeded = projectSyncNeeded;
+    }
 }

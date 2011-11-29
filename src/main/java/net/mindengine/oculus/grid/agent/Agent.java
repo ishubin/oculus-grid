@@ -29,6 +29,7 @@ import java.util.concurrent.TimeoutException;
 import net.mindengine.jeremy.registry.Lookup;
 import net.mindengine.jeremy.registry.Registry;
 import net.mindengine.jeremy.starter.RegistryStarter;
+import net.mindengine.oculus.grid.GridProperties;
 import net.mindengine.oculus.grid.GridUtils;
 import net.mindengine.oculus.grid.agent.taskrunner.TaskRunner;
 import net.mindengine.oculus.grid.domain.agent.AgentId;
@@ -40,6 +41,9 @@ import net.mindengine.oculus.grid.domain.task.TaskStatus;
 import net.mindengine.oculus.grid.domain.task.TestStatus;
 import net.mindengine.oculus.grid.service.AgentServerRemoteInterface;
 import net.mindengine.oculus.grid.service.ServerAgentRemoteInterface;
+import net.mindengine.oculus.grid.service.exceptions.IncorrectTaskException;
+import net.mindengine.oculus.grid.storage.DefaultAgentStorage;
+import net.mindengine.oculus.grid.storage.Storage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -77,7 +81,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
     private Integer agentPort;
     private Integer agentReconnectionTimeout = 5;
     
-    
+    private Storage storage;
     private Registry registry = GridUtils.createDefaultRegistry();
 	/**
 	 * Flag which is used by the oculus-runner in order to check if it should proceed running all next tests
@@ -132,14 +136,35 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	public void killAgent() {
 		System.exit(0);
 	}
+	
+	protected boolean synchronizeProjectForTask(SuiteTask suiteTask) throws Exception {
+	    
+	    if(suiteTask.getProjectName()==null || suiteTask.getProjectName().isEmpty()) {
+	        throw new IncorrectTaskException("Project name should not be empty");
+	    }
+	    
+	    if(suiteTask.getProjectVersion()==null || suiteTask.getProjectVersion().isEmpty()) {
+            throw new IncorrectTaskException("Project version should not be empty");
+        }
+	    
+	    String serverControlCode = server.getProjectControlCode(suiteTask.getProjectName(), suiteTask.getProjectVersion());
+	    if(serverControlCode==null) {
+	        throw new Exception("There is no project found on a server storage");
+	    }
+	    String storageControlKey = storage.readProjectControlKey(suiteTask.getProjectName(), suiteTask.getProjectVersion());
+	    
+	    if(serverControlCode.equals(storageControlKey)) {
+	        return true;
+	    }
+	    return false;
+	}
 
 	@Override
 	public void runSuiteTask(SuiteTask task) throws Exception {
 	    
-	    //TODO Add check if project is here and has the same control key, if not - download it form server 
+	    Boolean isSynced = synchronizeProjectForTask(task);
 	    shouldCurrentTaskProceed = true;
 	    
-
 		this.task = task;
 		logger.info("Running task " + task);
 		taskStatus = new TaskStatus();
@@ -153,6 +178,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 		// The agent properties will be needed for launching the Process in
 		// SuiteTaskRunner
 		taskRunner.setAgentProperties(properties);
+		taskRunner.setProjectSyncNeeded(!isSynced);
 		taskRunner.start();
 	}
 
@@ -234,6 +260,13 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 
 	}
 	
+	/**
+	 * Invoked in case if an error occured during task execution
+	 */
+	public void onTaskError(Throwable error) {
+	    //TODO handle error in agent
+	}
+	
 
 
 	public static void verifyResource(Properties properties, String key) throws Exception {
@@ -247,27 +280,6 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 		}
 		else if (!file.isDirectory()) {
 			throw new Exception("The " + key + " property refers to not a directory: " + path);
-		}
-	}
-
-	public static boolean contains(File[] files, String libName) {
-		for (File f : files) {
-			if (f.isFile()) {
-				String str = f.getName().toLowerCase();
-				if (str.endsWith(".jar")) {
-					if (str.startsWith(libName)) {
-						return true;
-					}
-				}
-
-			}
-		}
-		return false;
-	}
-
-	public static void verifyOculusLibrary(File[] files, String libName) throws Exception {
-		if (!contains(files, libName)) {
-			throw new Exception("The agent.oculus.library directory should contain " + libName + " library");
 		}
 	}
 	
@@ -305,7 +317,9 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	}
 	
 	public void startAgent() throws Exception {
-	    
+	    if(this.storage==null) {
+	        throw new IllegalArgumentException("Storage is not defined");
+	    }
         Lookup lookup = GridUtils.createDefaultLookup();
         lookup.setUrl("http://"+serverHost+":"+serverPort);
         
@@ -408,6 +422,10 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
         agent.agentName = agent.properties.getProperty(AgentProperties.AGENT_NAME);
         agent.agentRemoteName = agent.properties.getProperty(AgentProperties.AGENT_REMOTE_NAME);
         agent.agentReconnectionTimeout = Integer.parseInt(agent.properties.getProperty(AgentProperties.AGENT_RECONNECT_TIMEOUT));
+        
+        DefaultAgentStorage storage = new DefaultAgentStorage();
+        storage.setStoragePath(agent.properties.getProperty(GridProperties.STORAGE_PATH));
+        agent.storage = storage;
         agent.startAgent();
     }
 
@@ -433,5 +451,13 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 
     public Integer getAgentReconnectionTimeout() {
         return agentReconnectionTimeout;
+    }
+
+    public Storage getStorage() {
+        return storage;
+    }
+
+    public void setStorage(Storage storage) {
+        this.storage = storage;
     }
 }

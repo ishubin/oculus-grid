@@ -115,13 +115,14 @@ public interface ClientServerRemoteInterface extends Remote {
 	/**
 	 * Upload project to server
 	 * 
-	 * @param projectPath
+	 * @param projectName
 	 * @param version
 	 * @param file
 	 *            the zip archive with project files
+	 * @param userName Name of user who performs the project upload
 	 * @throws Exception
 	 */
-	public void uploadProject(String projectPath, String version, RemoteFile file) throws Exception;
+	public void uploadProject(String projectName, String version, RemoteFile file, String userName ) throws Exception;
 
 	/**
 	 * Returns array of tasks which belong to the specified task
