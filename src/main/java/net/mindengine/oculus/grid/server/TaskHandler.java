@@ -77,6 +77,8 @@ public class TaskHandler extends Thread {
 						                    agentContainer.getFreeAgents().remove(agent.getAgentId());
 						                    agentContainer.getAgents().remove(agent.getAgentId());
 						                    ex.printStackTrace();
+						                    
+						                    taskContainer.moveTaskToErrorTask(task, ex.getClass().getName()+": " + ex.getMessage());
 						                }
 						            }
 						        }
@@ -100,23 +102,21 @@ public class TaskHandler extends Thread {
 		}
 	}
 
-	private void assignTaskToAgent(TaskWrapper task, AgentWrapper agent) throws Exception {
+	private void assignTaskToAgent(TaskWrapper task, AgentWrapper agentWrapper) throws Exception {
 	    if(task.getTask() instanceof SuiteTask) {
 	        
-	        
-	        //TODO Handle situation when agent throws IncorrectTaskException
-    		agent.getAgentRemoteInterface().runSuiteTask((SuiteTask)task.getTask());
-    		agent.setStatus(AgentWrapper.BUSY);
-    		agent.setAssignedTask(task);
+    		agentWrapper.getAgentRemoteInterface().runSuiteTask((SuiteTask)task.getTask());
+    		agentWrapper.setStatus(AgentWrapper.BUSY);
+    		agentWrapper.setAssignedTask(task);
     		taskContainer.getQueuedTasks().remove(task);
     		taskContainer.getAssignedTasks().put(task.getId(), task);
-    		agentContainer.getFreeAgents().remove(agent.getAgentId());
+    		agentContainer.getFreeAgents().remove(agentWrapper.getAgentId());
     		task.setState(TaskWrapper.ASSIGNED);
-    		task.setAssignedAgent(agent);
+    		task.setAssignedAgent(agentWrapper);
     
     		task.getTask().setStartedDate(new Date());
     		task.getTask().getTaskStatus().setStatus(TaskStatus.ACTIVE);
-    		task.getTask().getTaskStatus().setAssignedAgent(agent.getAgentInformation());
+    		task.getTask().getTaskStatus().setAssignedAgent(agentWrapper.getAgentInformation());
     		server.updateTaskStatus(task.getId(), task.getTask().getTaskStatus());
 	    }
 	}

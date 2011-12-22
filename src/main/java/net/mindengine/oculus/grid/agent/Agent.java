@@ -83,6 +83,10 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
     
     private Storage storage;
     private Registry registry = GridUtils.createDefaultRegistry();
+    
+    //Flag that specifies should agent stop running or not
+    private volatile boolean shouldRun = true;
+    
 	/**
 	 * Flag which is used by the oculus-runner in order to check if it should proceed running all next tests
 	 */
@@ -264,10 +268,18 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	 * Invoked in case if an error occured during task execution
 	 */
 	public void onTaskError(Throwable error) {
-	    //TODO handle error in agent
+	    logger.info("Task is finished with error");
+        taskStatus.setStatus(TaskStatus.COMPLETED);
+        taskStatus.setMessage(error.getClass().getName()+": "+error.getMessage());
+        try {
+            server.updateTaskStatus(task.getId(), taskStatus);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        task = null;
 	}
 	
-
 
 	public static void verifyResource(Properties properties, String key) throws Exception {
 		String path = properties.getProperty(key);
@@ -314,9 +326,11 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	public void stopAgent() throws Exception {
 	    agentConnectionChecker.stopConnectionChecker();
 	    registry.stop();
+	    shouldRun = false;
 	}
 	
 	public void startAgent() throws Exception {
+	    shouldRun = true;
 	    if(this.storage==null) {
 	        throw new IllegalArgumentException("Storage is not defined");
 	    }
@@ -348,9 +362,8 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
         agentConnectionChecker.start();
         
         
-        while(true) {
+        while(shouldRun) {
             //This is just to keep agent running
-            //TODO Change this infinite loop to something nicer
         }
 	}
 	
