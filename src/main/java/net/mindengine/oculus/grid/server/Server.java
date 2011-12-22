@@ -167,7 +167,6 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
             logger.info("Stoping task " + task.getId());
 
             if (TaskStatus.WAITING.equals(task.getTask().getTaskStatus().getStatus())) {
-                taskContainer.getQueuedTasks().remove(task);
                 taskContainer.moveTaskToCompleted(task);
             }
 
@@ -236,10 +235,7 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
                  */
                 if (taskWrapper.getParent() == null) {
                     TaskUser taskUser = taskWrapper.getTask().getTaskUser();
-                    if (taskUser == null) {
-                        throw new NullPointerException("The taskUser is null");
-                    }
-                    if (userId.equals(taskUser.getId())) {
+                    if (taskUser!=null && userId.equals(taskUser.getId())) {
                         if (taskWrapper.getTask() instanceof MultiTask) {
                             MultiTask multiTask = (MultiTask) taskWrapper.getTask();
                             multiTask.updateTaskStatus();
@@ -366,6 +362,9 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
         
         if (serverName == null || serverName.isEmpty()) {
             throw new Exception("Name of server is not specified");
+        }
+        if(storage==null) {
+            throw new IllegalArgumentException("Storage is not specified");
         }
 
         registry.addObject(serverName, this);

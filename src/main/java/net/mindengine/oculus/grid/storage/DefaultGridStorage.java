@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -49,7 +50,9 @@ public class DefaultGridStorage implements Storage {
         appendProperty(buff, PROJECT_NAME, projectName);
         appendProperty(buff, PROJECT_VERSION, projectVersion);
         appendProperty(buff, CONTROL_KEY, controlKey);
-        appendProperty(buff, UPLOAD_DATE, date.toString());
+        
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+        appendProperty(buff, UPLOAD_DATE, sdf.format(date));
         appendProperty(buff, UPLOAD_USER, userName);
         
         FileUtils.writeStringToFile(file, buff.toString(), "UTF-8");

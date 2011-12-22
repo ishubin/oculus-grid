@@ -26,9 +26,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.Properties;
 
+import net.mindengine.oculus.grid.GridProperties;
 import net.mindengine.oculus.grid.GridUtils;
 import net.mindengine.oculus.grid.agent.Agent;
 import net.mindengine.oculus.grid.server.Server;
+import net.mindengine.oculus.grid.storage.DefaultAgentStorage;
+import net.mindengine.oculus.grid.storage.DefaultGridStorage;
 
 import org.junit.Test;
 
@@ -52,6 +55,7 @@ public class ConnectionTest {
     public void agentCanReconnectToServer() throws Exception {
         final ErrorContainer errorContainer = new ErrorContainer();
         final Server server = new Server();
+        server.setStorage(new DefaultGridStorage());
         Thread serverThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -80,6 +84,9 @@ public class ConnectionTest {
         agent.setServerName("server");
         agent.setServerPort(8090);
         agent.setAgentReconnectionTimeout(1);
+        DefaultAgentStorage storage = new DefaultAgentStorage();
+        storage.setStoragePath(agent.getProperties().getProperty(GridProperties.STORAGE_PATH));
+        agent.setStorage(storage);
         
         Thread agentThread = new Thread(new Runnable() {
             @Override
@@ -111,6 +118,7 @@ public class ConnectionTest {
         
         //Starting server again
         final Server server2 = new Server();
+        server2.setStorage(new DefaultGridStorage());
         serverThread = new Thread(new Runnable() {
             @Override
             public void run() {

@@ -33,9 +33,11 @@ import net.mindengine.oculus.grid.domain.agent.AgentInformation;
 public class TaskStatus implements Serializable {
 	private static final long serialVersionUID = -3075389071512049788L;
 	public static final Integer ACTIVE = 0;
-	public static final Integer RUNTIME_ERROR = 1;
+	public static final Integer ERROR = 1;
 	public static final Integer COMPLETED = 2;
 	public static final Integer WAITING = 3;
+	
+	public static final String ERROR_NO_PROJECT_IN_STORAGE = "No project in storage";
 	private Long taskId;
 
 	private boolean interrupted = false;

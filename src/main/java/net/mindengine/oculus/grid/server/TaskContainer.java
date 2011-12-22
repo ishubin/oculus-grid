@@ -26,6 +26,7 @@ import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.ReentrantLock;
 
+import net.mindengine.oculus.grid.domain.task.DefaultTask;
 import net.mindengine.oculus.grid.domain.task.MultiTask;
 import net.mindengine.oculus.grid.domain.task.Task;
 import net.mindengine.oculus.grid.domain.task.TaskStatus;
@@ -97,6 +98,9 @@ public class TaskContainer {
 	 * @param taskWrapper
 	 */
 	private void moveTaskToCompletedWithoutLock(TaskWrapper taskWrapper) {
+	    if(queuedTasks.contains(taskWrapper)) {
+	        queuedTasks.remove(taskWrapper);
+	    }
 		removeTaskFromTemp(taskWrapper);
 		completedTasks.put(taskWrapper.getId(), taskWrapper);
 		taskWrapper.setState(TaskWrapper.COMPLETED);
@@ -109,6 +113,21 @@ public class TaskContainer {
 			updateMultiTaskStatus(taskWrapper.getParent());
 		}
 	}
+	
+	public void moveTaskToErrorTask(TaskWrapper taskWrapper, String message) {
+        removeTaskFromTemp(taskWrapper);
+        completedTasks.put(taskWrapper.getId(), taskWrapper);
+        taskWrapper.setState(TaskWrapper.COMPLETED);
+        Task task = taskWrapper.getTask();
+        task.getTaskStatus().setStatus(TaskStatus.ERROR);
+        task.getTaskStatus().setMessage(message);
+        taskWrapper.setAssignedAgent(null);
+        taskWrapper.getTask().setCompletedDate(new Date());
+        
+        if (taskWrapper.getParent() != null) {
+            updateMultiTaskStatus(taskWrapper.getParent());
+        }
+    }
 
 	/**
 	 * Updates the multi tasks status and moves it to completed tasks list if
@@ -121,7 +140,7 @@ public class TaskContainer {
 	    
 	    boolean bAllCompleted = true;
 		for (Task task : multiTask.getTasks()) {
-			if (!task.getTaskStatus().getStatus().equals(TaskStatus.COMPLETED)) {
+			if (!(task.getTaskStatus().getStatus().equals(TaskStatus.COMPLETED) || task.getTaskStatus().getStatus().equals(TaskStatus.ERROR))) {
 				bAllCompleted = false;
 			}
 		}

@@ -33,10 +33,10 @@ import net.mindengine.oculus.grid.domain.task.TaskStatus;
 public class TaskHandler extends Thread {
 	private TaskContainer taskContainer;
 	private AgentContainer agentContainer;
-	private Server trmServer;
+	private Server server;
 
-	public TaskHandler(Server trmServer) {
-		this.trmServer = trmServer;
+	public TaskHandler(Server server) {
+		this.server = server;
 	}
 
 	@Override
@@ -49,27 +49,41 @@ public class TaskHandler extends Thread {
 				 * Locking all tasks and agents entities to prevent threads
 				 * interruption
 				 */
-				//TODO Server should check if there is a project in storage and it can actually execute the task, if not - it should give a status to task like "NO_PROJECT_IN_STORAGE" 
 				taskContainer.getTaskLock().lock();
 				agentContainer.getAgentLock().lock();
+				
 				try {
 					if (taskContainer.hasQueuedTasks()) {
 						for (TaskWrapper task : taskContainer.getQueuedTasks()) {
 						    
-							AgentWrapper agent = agentContainer.fetchAgentWrapper(task.getTask().getAgentNames());
-							if (agent != null) {
-								try {
-									/*
-									 * Assigning task to agent
-									 */
-									assignTaskToAgent(task, agent);
-								}
-								catch (Exception ex) {
-									agentContainer.getFreeAgents().remove(agent.getAgentId());
-									agentContainer.getAgents().remove(agent.getAgentId());
-									ex.printStackTrace();
-								}
-							}
+						    if(task.getTask() instanceof SuiteTask) {
+						        /*
+						         * Checking that project with specified name and version is in storage already.
+						         * If not the task will be rejected with NO_PROJECT_IN_STORAGE status
+						         */
+						        SuiteTask suiteTask = (SuiteTask)task.getTask();
+						        String storageKey = server.getStorage().readProjectControlKey(suiteTask.getProjectName(), suiteTask.getProjectVersion());
+						        
+						        if(storageKey!=null) {
+						            AgentWrapper agent = agentContainer.fetchAgentWrapper(task.getTask().getAgentNames());
+						            if (agent != null) {
+						                try {
+						                    /*
+						                     * Assigning task to agent
+						                     */
+						                    assignTaskToAgent(task, agent);
+						                }
+						                catch (Exception ex) {
+						                    agentContainer.getFreeAgents().remove(agent.getAgentId());
+						                    agentContainer.getAgents().remove(agent.getAgentId());
+						                    ex.printStackTrace();
+						                }
+						            }
+						        }
+						        else {
+						            taskContainer.moveTaskToErrorTask(task, TaskStatus.ERROR_NO_PROJECT_IN_STORAGE);
+						        }
+						    }
 						}
 					}
 				}
@@ -103,7 +117,7 @@ public class TaskHandler extends Thread {
     		task.getTask().setStartedDate(new Date());
     		task.getTask().getTaskStatus().setStatus(TaskStatus.ACTIVE);
     		task.getTask().getTaskStatus().setAssignedAgent(agent.getAgentInformation());
-    		trmServer.updateTaskStatus(task.getId(), task.getTask().getTaskStatus());
+    		server.updateTaskStatus(task.getId(), task.getTask().getTaskStatus());
 	    }
 	}
 

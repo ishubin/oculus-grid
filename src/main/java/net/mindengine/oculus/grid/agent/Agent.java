@@ -349,7 +349,8 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
         
         
         while(true) {
-            //Just a dirty hack to keep agent running
+            //This is just to keep agent running
+            //TODO Change this infinite loop to something nicer
         }
 	}
 	

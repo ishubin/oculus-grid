@@ -42,6 +42,7 @@ import net.mindengine.oculus.grid.domain.task.TestStatus;
 import net.mindengine.oculus.grid.server.Server;
 import net.mindengine.oculus.grid.service.ClientServerRemoteInterface;
 import net.mindengine.oculus.grid.service.exceptions.IncorrectTaskException;
+import net.mindengine.oculus.grid.storage.DefaultGridStorage;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -63,6 +64,10 @@ public class TaskTest {
     
     @BeforeClass
     public static void startServer() throws InterruptedException {
+        DefaultGridStorage storage = new DefaultGridStorage();
+        
+        storage.setStoragePath("../data/storage-server");
+        server.setStorage(storage);
         serverThread.start();
         Thread.sleep(4000);
     }
@@ -77,6 +82,10 @@ public class TaskTest {
     
     @Test
     public void serverSendsRecievesTask() throws Exception{
+        /*
+         * To be able to run this test the storage should be configured properly.
+         * Just run utils/install.sh script from workspace folder
+         */
         GridClient client = new GridClient();
         client.setServerHost("localhost");
         client.setServerPort(8100);
@@ -150,6 +159,8 @@ public class TaskTest {
         
         Suite suite = XmlSuiteParser.parse(new File(getClass().getResource("/sample-suite.xml").toURI()));
         suiteTask.setSuite(suite);
+        suiteTask.setProjectName("sample-project");
+        suiteTask.setProjectVersion("current");
         task.setSuiteTasks(suiteTasks);
         return task;
     }
@@ -162,6 +173,7 @@ public class TaskTest {
         task1.setTaskUser(new TaskUser(2L, "test user1"));
         task2.setName("Task 2");
         task2.setTaskUser(new TaskUser(3L, "test user2"));
+        
         
         Long task1Id = server.runTask(task1);
         Long task2Id = server.runTask(task2);
@@ -206,4 +218,40 @@ public class TaskTest {
         remote.runTask(task);
     }
     
+    @Test
+    public void noProjectInStorageErrorCheck() throws Exception{
+        GridClient client = new GridClient();
+        client.setServerHost("localhost");
+        client.setServerPort(8100);
+        client.setServerName("server");
+        
+        ClientServerRemoteInterface remote = client.getServer();
+        assertNotNull(remote);
+        
+        DefaultTask task = new DefaultTask();
+        task.setAgentNames(new String[]{"agent1"});
+        task.setCreatedDate(new Date(1234567));
+        List<SuiteTask> suiteTasks = new LinkedList<SuiteTask>();
+        
+        SuiteTask suiteTask = new SuiteTask();
+        suiteTask.setName("Unsynced project task");
+        suiteTask.setProjectName("unsynced_project");
+        suiteTask.setProjectVersion("unsynced_version");
+        suiteTask.setSuite(XmlSuiteParser.parse(new File(getClass().getResource("/sample-suite.xml").toURI())));
+        suiteTasks.add(suiteTask);
+        task.setSuiteTasks(suiteTasks);
+        
+        Long taskId = remote.runTask(task);
+        
+        Thread.sleep(10000);
+        
+        TaskInformation parentTaskInformation = server.getTask(taskId);
+        TaskInformation[]list = server.getTasks(taskId);
+        
+        assertEquals(TaskStatus.COMPLETED, parentTaskInformation.getTaskStatus().getStatus());
+        assertNotNull(list);
+        assertEquals(1, list.length);
+        assertEquals(TaskStatus.ERROR, list[0].getTaskStatus().getStatus());
+        assertEquals(TaskStatus.ERROR_NO_PROJECT_IN_STORAGE, list[0].getTaskStatus().getMessage());
+    }
 }
