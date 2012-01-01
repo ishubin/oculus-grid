@@ -21,11 +21,13 @@ package net.mindengine.oculus.grid.agent.taskrunner;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.Random;
 
 import net.mindengine.oculus.experior.suite.XmlSuiteParser;
+import net.mindengine.oculus.experior.utils.FileUtils;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
 import net.mindengine.oculus.grid.storage.Project;
 
@@ -122,11 +124,16 @@ public class SuiteTaskRunner extends TaskRunner {
 			
 			logger.info("Saving suite to " + file.getAbsolutePath());
 			XmlSuiteParser.saveSuite(task.getSuite(), file);
-
-			String processCommand = "java -classpath \"" + pathToOculusGrid + jSeparator 
+			
+			/*
+			 * Actually here the process command should wrap the classpath in quotes but for some reason java throws error "unable to find jarfile"
+			 * 
+			 */
+			
+			String processCommand = "java -classpath " + pathToOculusGrid + jSeparator 
 			    + currentProjectDir + File.separator + "libs" + File.separator + "*" + jSeparator
 			    + currentProjectDir + File.separator + "lib" + File.separator + "*" + jSeparator
-			    + currentProjectDir + File.separator + "*\"" 
+			    + currentProjectDir + File.separator + "*" 
 			    + " " + oculusRunnerClasspath 
 			    + " localhost " 
 			    + getAgent().getAgentPort() + " " 
