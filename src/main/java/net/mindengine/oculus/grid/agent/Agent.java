@@ -64,8 +64,6 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	private AgentInformation agentInformation = new AgentInformation();
 	private AgentServerRemoteInterface server;
 	
-	private Properties properties;
-
 	private AgentConnectionChecker agentConnectionChecker = new AgentConnectionChecker();
 	private Task task;
 	private TaskStatus taskStatus;
@@ -78,8 +76,13 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	private String agentRemoteName;
     private String agentHost;
     private String agentName;
+    private String agentDescription;
     private Integer agentPort;
     private Integer agentReconnectionTimeout = 5;
+    
+    private String agentStoragePath;
+    private String agentOculusGridLibrary;
+    private String AgentOculusRunner;
     
     private Storage storage;
     private Registry registry = GridUtils.createDefaultRegistry();
@@ -111,7 +114,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	    getAgentInformation().setHost(agentHost);
 		getAgentInformation().setName(agentName);
 		getAgentInformation().setRemoteName(agentRemoteName);
-		getAgentInformation().setDescription(properties.getProperty(AgentProperties.AGENT_DESCRIPTION));
+		getAgentInformation().setDescription(agentDescription);
 		getAgentInformation().setPort(agentPort);
 
 		logger.info("Starting agent: " + getAgentInformation());
@@ -179,9 +182,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 
 			suiteTask.getSuite().setAgentName(getAgentInformation().getName());
 		}
-		// The agent properties will be needed for launching the Process in
-		// SuiteTaskRunner
-		taskRunner.setAgentProperties(properties);
+		
 		taskRunner.setProjectSyncNeeded(!isSynced);
 		taskRunner.start();
 	}
@@ -194,14 +195,6 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	@Override
 	public Boolean shouldProceed() {
 	    return shouldCurrentTaskProceed;
-	}
-
-	public void setProperties(Properties properties) {
-		this.properties = properties;
-	}
-
-	public Properties getProperties() {
-		return properties;
 	}
 
 	public void setServer(AgentServerRemoteInterface server) {
@@ -302,7 +295,6 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	 * @throws Exception
 	 */
 	public void reconnect() throws Exception {
-	    String serverName =  properties.getProperty(AgentProperties.SERVER_NAME);
 		logger.info("Connecting to " + serverName);
 		
 		this.server = lookup.getRemoteObject(serverName, AgentServerRemoteInterface.class);
@@ -425,20 +417,25 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 
     public static void main(String[] args) throws Exception {
         Agent agent = new Agent();
-        agent.properties = new Properties();
-        agent.properties.load(new FileReader(new File(GridUtils.getMandatoryResourceFile(Agent.class, "/grid.agent.properties"))));
-        agent.serverHost = agent.properties.getProperty(AgentProperties.SERVER_HOST);
-        agent.serverPort = Integer.parseInt(agent.properties.getProperty(AgentProperties.SERVER_PORT));
-        agent.serverName = agent.properties.getProperty(AgentProperties.SERVER_NAME);
+        Properties properties = new Properties();
+        properties.load(new FileReader(new File(GridUtils.getMandatoryResourceFile(Agent.class, "/grid.agent.properties"))));
+        agent.serverHost = properties.getProperty(AgentProperties.SERVER_HOST);
+        agent.serverPort = Integer.parseInt(properties.getProperty(AgentProperties.SERVER_PORT));
+        agent.serverName = properties.getProperty(AgentProperties.SERVER_NAME);
         
-        agent.agentHost = agent.properties.getProperty(AgentProperties.AGENT_HOST);
-        agent.agentPort = Integer.parseInt(agent.properties.getProperty(AgentProperties.AGENT_PORT));
-        agent.agentName = agent.properties.getProperty(AgentProperties.AGENT_NAME);
-        agent.agentRemoteName = agent.properties.getProperty(AgentProperties.AGENT_REMOTE_NAME);
-        agent.agentReconnectionTimeout = Integer.parseInt(agent.properties.getProperty(AgentProperties.AGENT_RECONNECT_TIMEOUT));
+        agent.agentHost = properties.getProperty(AgentProperties.AGENT_HOST);
+        agent.agentPort = Integer.parseInt(properties.getProperty(AgentProperties.AGENT_PORT));
+        agent.agentName = properties.getProperty(AgentProperties.AGENT_NAME);
+        agent.agentRemoteName = properties.getProperty(AgentProperties.AGENT_REMOTE_NAME);
+        agent.agentReconnectionTimeout = Integer.parseInt(properties.getProperty(AgentProperties.AGENT_RECONNECT_TIMEOUT));
+        agent.agentDescription = properties.getProperty(AgentProperties.AGENT_DESCRIPTION);
+        agent.agentStoragePath = properties.getProperty(GridProperties.STORAGE_PATH);
+        agent.agentOculusGridLibrary = properties.getProperty(AgentProperties.AGENT_OCULUS_GRID_LIBRARY);
+        agent.AgentOculusRunner = properties.getProperty(AgentProperties.AGENT_OCULUS_RUNNER);
         
         DefaultAgentStorage storage = new DefaultAgentStorage();
-        storage.setStoragePath(agent.properties.getProperty(GridProperties.STORAGE_PATH));
+            
+        storage.setStoragePath(properties.getProperty(GridProperties.STORAGE_PATH));
         agent.storage = storage;
         agent.startAgent();
     }
@@ -473,5 +470,37 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 
     public void setStorage(Storage storage) {
         this.storage = storage;
+    }
+
+    public String getAgentDescription() {
+        return agentDescription;
+    }
+
+    public void setAgentDescription(String agentDescription) {
+        this.agentDescription = agentDescription;
+    }
+
+    public String getAgentOculusRunner() {
+        return AgentOculusRunner;
+    }
+
+    public void setAgentOculusRunner(String agentOculusRunner) {
+        AgentOculusRunner = agentOculusRunner;
+    }
+
+    public String getAgentOculusGridLibrary() {
+        return agentOculusGridLibrary;
+    }
+
+    public void setAgentOculusGridLibrary(String agentOculusGridLibrary) {
+        this.agentOculusGridLibrary = agentOculusGridLibrary;
+    }
+
+    public String getAgentStoragePath() {
+        return agentStoragePath;
+    }
+
+    public void setAgentStoragePath(String agentStoragePath) {
+        this.agentStoragePath = agentStoragePath;
     }
 }

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suite name="Sample Suite 1" runnerId="1">
+
+	<test id="1" mapping="net.mindengine.oculus.test.sample.TestWith3Actions">
+    </test>
+
+    
+</suite>

@@ -405,7 +405,7 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
     
     @Override
     public String getProjectControlCode(String projectName, String version) throws Exception {
-        return getStorage().readProjectControlKey(projectName, projectName);
+        return getStorage().readProjectControlKey(projectName, version);
     }
     
     @Override

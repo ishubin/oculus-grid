@@ -20,13 +20,12 @@ package net.mindengine.oculus.grid.agent.taskrunner;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.Random;
 
 import net.mindengine.oculus.experior.suite.XmlSuiteParser;
-import net.mindengine.oculus.grid.GridProperties;
-import net.mindengine.oculus.grid.agent.AgentProperties;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
 import net.mindengine.oculus.grid.storage.Project;
 
@@ -62,20 +61,31 @@ public class SuiteTaskRunner extends TaskRunner {
 			}
 			
 
-			String projectFolder = task.getProjectName() + File.separator + task.getProjectName();
+			String projectFolder = task.getProjectName() + File.separator;
 			if (task.getProjectVersion() != null && !task.getProjectVersion().isEmpty()) {
-				projectFolder += "-" + task.getProjectVersion();
+				projectFolder += task.getProjectVersion();
 			}
 			else {
-				projectFolder += "-current";
+				projectFolder += "current";
 			}
 
-			String storagePath = getAgentProperties().getProperty(GridProperties.STORAGE_PATH);
-			String pathToOculusGrid = getAgentProperties().getProperty(AgentProperties.AGENT_OCULUS_GRID_LIBRARY);
-
+			String storagePath = getAgent().getAgentStoragePath();
+			String pathToOculusGrid = getAgent().getAgentOculusGridLibrary();
+			
+			if(!new File(pathToOculusGrid).exists()) {
+			    throw new FileNotFoundException(pathToOculusGrid);
+			}
+			
 			String currentProjectDir = storagePath + File.separator + projectFolder;
-
-			String oculusRunnerClasspath = getAgentProperties().getProperty(AgentProperties.AGENT_OCULUS_RUNNER);
+			String oculusRunnerClasspath = getAgent().getAgentOculusRunner();
+			
+			if(storagePath==null) {
+			    throw new IllegalArgumentException("Agent storage path is not specified");
+			}
+			if(pathToOculusGrid==null) {
+                throw new IllegalArgumentException("Path to oculus grid library is not specified");
+            }
+			
 			/*
 			 * Determine separator for java classpath
 			 */
@@ -109,28 +119,18 @@ public class SuiteTaskRunner extends TaskRunner {
 				suiteFileName = "suite" + new Date().getTime() + (new Random().nextInt(6)) + ".xml";
 				file = new File(currentProjectDir + File.separator + suiteFileName);
 			}
-			/*
-			 * Making dirs in case if the path wasn't specified the right way.
-			 * In this case the whole TRMAgent might stuck and be busy forever.
-			 * In order to prevent this situation we need need to make sure that
-			 * we don't get any exceptions before the OculusRunner will be
-			 * launched
-			 */
-			File fileProjectsDir = new File(currentProjectDir);
-			if(!fileProjectsDir.exists()){
-				fileProjectsDir.mkdirs();
-			}
 			
 			logger.info("Saving suite to " + file.getAbsolutePath());
 			XmlSuiteParser.saveSuite(task.getSuite(), file);
 
 			String processCommand = "java -classpath \"" + pathToOculusGrid + jSeparator 
-			    + currentProjectDir + File.separator + "libs" + File.separator + "*" + jSeparator 
+			    + currentProjectDir + File.separator + "libs" + File.separator + "*" + jSeparator
+			    + currentProjectDir + File.separator + "lib" + File.separator + "*" + jSeparator
 			    + currentProjectDir + File.separator + "*\"" 
 			    + " " + oculusRunnerClasspath 
 			    + " localhost " 
-			    + getAgentProperties().getProperty(AgentProperties.AGENT_PORT) + " " 
-			    + getAgentProperties().getProperty(AgentProperties.AGENT_REMOTE_NAME)  + " " 
+			    + getAgent().getAgentPort() + " " 
+			    + getAgent().getAgentRemoteName() + " " 
 			    + suiteFileName;
 
 			logger.info("Working directory is: " + currentProjectDir);
@@ -139,6 +139,8 @@ public class SuiteTaskRunner extends TaskRunner {
 			Runtime runtime = Runtime.getRuntime();
 			Process process = runtime.exec(processCommand, null, new File(currentProjectDir));
 
+			//TODO create a handler which waits for a response form launched process and in case there is no response - it kills it and reports error.
+			
 			BufferedReader inputStreamReader = new BufferedReader(new InputStreamReader((process.getInputStream())));
 			BufferedReader errorStreamReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 			String consoleText = null;
@@ -157,6 +159,7 @@ public class SuiteTaskRunner extends TaskRunner {
 			file.delete();
 		}
 		catch (Throwable error) {
+		    error.printStackTrace();
 			getAgent().onTaskError(error);
 		}
 	}

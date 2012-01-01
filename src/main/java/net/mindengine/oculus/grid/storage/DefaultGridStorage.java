@@ -137,9 +137,10 @@ public class DefaultGridStorage implements Storage {
         lock.lock(name, version);
         Project project = null;
         try {
-            File file = new File(getPathToProjectZip(name, version));
+            String pathToProjectZip = getPathToProjectZip(name, version);
+            File file = new File(pathToProjectZip);
             if(!file.exists()) {
-                throw new FileNotFoundException("File for project '"+name+"' with version '"+version+"' is not found");
+                throw new FileNotFoundException("File for project '"+name+"' with version '"+version+"' is not found: "+pathToProjectZip);
             }
             
             project = new Project();

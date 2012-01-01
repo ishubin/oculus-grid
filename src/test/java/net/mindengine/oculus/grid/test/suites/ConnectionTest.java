@@ -75,7 +75,6 @@ public class ConnectionTest {
         final Agent agent = new Agent();
         Properties properties = new Properties();
         properties.load(new FileReader(new File(GridUtils.getMandatoryResourceFile(Agent.class, "/grid.agent.properties"))));
-        agent.setProperties(properties);
         agent.setAgentHost("localhost");
         agent.setAgentName("Agent");
         agent.setAgentPort(8091);
@@ -85,7 +84,7 @@ public class ConnectionTest {
         agent.setServerPort(8090);
         agent.setAgentReconnectionTimeout(1);
         DefaultAgentStorage storage = new DefaultAgentStorage();
-        storage.setStoragePath(agent.getProperties().getProperty(GridProperties.STORAGE_PATH));
+        storage.setStoragePath(properties.getProperty(GridProperties.STORAGE_PATH));
         agent.setStorage(storage);
         
         Thread agentThread = new Thread(new Runnable() {

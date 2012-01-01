@@ -80,22 +80,48 @@ public class TaskTest {
         Thread.sleep(4000);
     }
     
+    public GridClient createClient() {
+        GridClient client = new GridClient();
+        client.setServerHost("localhost");
+        client.setServerPort(8100);
+        client.setServerName("server");
+        return client;
+    }
+    
+    public DefaultTask createBasicTask(String suitePath) throws URISyntaxException, Exception {
+        DefaultTask task = new DefaultTask();
+        task.setName("sample task1");
+        
+        task.setAgentNames(new String[]{"agent1"});
+        task.setCreatedDate(new Date(1234567));
+        
+        List<SuiteTask> suiteTasks = new LinkedList<SuiteTask>();
+        SuiteTask suiteTask = new SuiteTask();
+        suiteTasks.add(suiteTask);
+        
+        suiteTask.setAgentNames(new String[]{"agent2", "agent3"});
+        suiteTask.setName("sample suite task");
+        
+        Suite suite = XmlSuiteParser.parse(new File(getClass().getResource("/"+suitePath).toURI()));
+        suiteTask.setSuite(suite);
+        suiteTask.setProjectName("sample-project");
+        suiteTask.setProjectVersion("current");
+        task.setSuiteTasks(suiteTasks);
+        return task;
+    }
+    
     @Test
     public void serverSendsRecievesTask() throws Exception{
         /*
          * To be able to run this test the storage should be configured properly.
          * Just run utils/install.sh script from workspace folder
          */
-        GridClient client = new GridClient();
-        client.setServerHost("localhost");
-        client.setServerPort(8100);
-        client.setServerName("server");
-        
+        GridClient client = createClient();
         ClientServerRemoteInterface remote = client.getServer();
         
         assertNotNull(remote);
         
-        DefaultTask task = createBasicTask();
+        DefaultTask task = createBasicTask("simple-suite.xml");
         
         Long taskId = remote.runTask(task);
         assertNotNull(taskId);
@@ -143,32 +169,10 @@ public class TaskTest {
         
     }
     
-    public DefaultTask createBasicTask() throws URISyntaxException, Exception {
-        DefaultTask task = new DefaultTask();
-        task.setName("sample task1");
-        
-        task.setAgentNames(new String[]{"agent1"});
-        task.setCreatedDate(new Date(1234567));
-        
-        List<SuiteTask> suiteTasks = new LinkedList<SuiteTask>();
-        SuiteTask suiteTask = new SuiteTask();
-        suiteTasks.add(suiteTask);
-        
-        suiteTask.setAgentNames(new String[]{"agent2", "agent3"});
-        suiteTask.setName("sample suite task");
-        
-        Suite suite = XmlSuiteParser.parse(new File(getClass().getResource("/sample-suite.xml").toURI()));
-        suiteTask.setSuite(suite);
-        suiteTask.setProjectName("sample-project");
-        suiteTask.setProjectVersion("current");
-        task.setSuiteTasks(suiteTasks);
-        return task;
-    }
-    
     @Test
     public void retrievesOnlyTasksWhichBelongToUser() throws URISyntaxException, Exception {
-        DefaultTask task1 = createBasicTask();
-        DefaultTask task2 = createBasicTask();
+        DefaultTask task1 = createBasicTask("simple-suite.xml");
+        DefaultTask task2 = createBasicTask("simple-suite.xml");
         task1.setName("Task 1");
         task1.setTaskUser(new TaskUser(2L, "test user1"));
         task2.setName("Task 2");
@@ -199,10 +203,7 @@ public class TaskTest {
     
     @Test(expected=IncorrectTaskException.class)
     public void emptyTaskGivesError() throws Exception {
-        GridClient client = new GridClient();
-        client.setServerHost("localhost");
-        client.setServerPort(8100);
-        client.setServerName("server");
+        GridClient client = createClient();
         
         ClientServerRemoteInterface remote = client.getServer();
         assertNotNull(remote);
@@ -213,17 +214,12 @@ public class TaskTest {
         List<SuiteTask> suiteTasks = new LinkedList<SuiteTask>();
         task.setSuiteTasks(suiteTasks);
         
-        
-        
         remote.runTask(task);
     }
     
     @Test
     public void noProjectInStorageErrorCheck() throws Exception{
-        GridClient client = new GridClient();
-        client.setServerHost("localhost");
-        client.setServerPort(8100);
-        client.setServerName("server");
+        GridClient client = createClient();
         
         ClientServerRemoteInterface remote = client.getServer();
         assertNotNull(remote);
@@ -237,7 +233,7 @@ public class TaskTest {
         suiteTask.setName("Unsynced project task");
         suiteTask.setProjectName("unsynced_project");
         suiteTask.setProjectVersion("unsynced_version");
-        suiteTask.setSuite(XmlSuiteParser.parse(new File(getClass().getResource("/sample-suite.xml").toURI())));
+        suiteTask.setSuite(XmlSuiteParser.parse(new File(getClass().getResource("/simple-suite.xml").toURI())));
         suiteTasks.add(suiteTask);
         task.setSuiteTasks(suiteTasks);
         
@@ -254,4 +250,5 @@ public class TaskTest {
         assertEquals(TaskStatus.ERROR, list[0].getTaskStatus().getStatus());
         assertEquals(TaskStatus.ERROR_NO_PROJECT_IN_STORAGE, list[0].getTaskStatus().getMessage());
     }
+    
 }

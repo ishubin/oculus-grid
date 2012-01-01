@@ -7,7 +7,7 @@ public class Project extends RemoteFile {
     /**
      * 
      */
-    private static final long serialVersionUID = 7376843462911913830L;
+    private static final long serialVersionUID = 1800931527219318420L;
 
     private String controlKey;
     private String projectName;

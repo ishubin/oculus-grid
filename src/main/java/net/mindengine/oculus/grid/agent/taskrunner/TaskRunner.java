@@ -18,8 +18,6 @@
  ******************************************************************************/
 package net.mindengine.oculus.grid.agent.taskrunner;
 
-import java.util.Properties;
-
 import net.mindengine.oculus.grid.agent.Agent;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
 import net.mindengine.oculus.grid.domain.task.Task;
@@ -38,7 +36,6 @@ import net.mindengine.oculus.grid.service.exceptions.IncorrectTaskException;
 public abstract class TaskRunner extends Thread {
 	private Task task;
 	private TaskStatus taskStatus;
-	private Properties agentProperties;
 	private Agent agent;
 	private Boolean projectSyncNeeded = false;
 
@@ -71,14 +68,6 @@ public abstract class TaskRunner extends Thread {
 
 	public TaskStatus getTaskStatus() {
 		return taskStatus;
-	}
-
-	public void setAgentProperties(Properties agentProperties) {
-		this.agentProperties = agentProperties;
-	}
-
-	public Properties getAgentProperties() {
-		return agentProperties;
 	}
 
 	public void setAgent(Agent agent) {

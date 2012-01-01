@@ -29,12 +29,6 @@ import net.mindengine.oculus.experior.test.TestLauncher;
  */
 public class DefaultOculusRunner extends OculusRunner {
 
-	/**
-     * 
-     */
-	private static final long serialVersionUID = 1141848202782406169L;
-
-
 	public static void main(String[] args) throws Exception {
 		OculusRunner oculusRunner = new DefaultOculusRunner();
 	    String agentHost = args[0];

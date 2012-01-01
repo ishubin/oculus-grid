@@ -58,7 +58,7 @@ public class GridUtils {
     public static Registry createDefaultRegistry() {
         Registry registry = new Registry();
         registry.addLanguageHandler(Client.LANGUAGE_JSON, new DefaultJsonLanguageHandler());
-        registry.addLanguageHandler(Client.LANGUAGE_BINARY, new DefaultJsonLanguageHandler());
+        registry.addLanguageHandler(Client.LANGUAGE_BINARY, new DefaultBinaryLanguageHandler());
         registry.setDefaultLanguage(Client.LANGUAGE_JSON);
         return registry;
     }

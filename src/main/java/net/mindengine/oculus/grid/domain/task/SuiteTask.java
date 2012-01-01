@@ -71,10 +71,14 @@ public class SuiteTask extends Task {
 	public TaskStatus updateTaskStatus() {
 	    TaskStatus taskStatus = getTaskStatus();
 	    
-	    SuiteStatistic statistic = taskStatus.getSuiteInformation().calculateStatistics();
+	    SuiteInformation suiteInformation = taskStatus.getSuiteInformation();
 	    
-	    if(statistic.getTotal()>0) {
-	        taskStatus.setPercent(100.0f * statistic.getFinished() / statistic.getTotal());
+	    if(suiteInformation!=null) {
+	        SuiteStatistic statistic = suiteInformation.calculateStatistics();
+	    
+	        if(statistic.getTotal()>0) {
+	            taskStatus.setPercent(100.0f * statistic.getFinished() / statistic.getTotal());
+	        }
 	    }
 	    return taskStatus;
 	}
