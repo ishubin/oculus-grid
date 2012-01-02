@@ -50,6 +50,9 @@ public class SuiteInformation {
                         statistic.setPostponed(statistic.getPostponed()+1);
                     }
                 }
+                else {
+                    statistic.setPostponed(statistic.getPostponed()+1);
+                }
             }
         }
         return statistic;

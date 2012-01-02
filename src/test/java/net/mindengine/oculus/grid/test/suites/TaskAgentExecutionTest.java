@@ -187,13 +187,11 @@ public class TaskAgentExecutionTest {
         
         assertNotNull(suiteTaskStatus.getSuiteInformation());
         SuiteStatistic suiteStatistic = suiteTaskStatus.getSuiteInformation().calculateStatistics();
-        assertEquals(0, (int)suiteStatistic.getFailed());
+        assertEquals(3, (int)suiteStatistic.getTotal());
+        assertEquals(1, (int)suiteStatistic.getFailed());
         assertEquals(0, (int)suiteStatistic.getWarning());
         assertEquals(1, (int)suiteStatistic.getPassed());
-        assertEquals(0, (int)suiteStatistic.getPostponed());
-        assertEquals(1, (int)suiteStatistic.getTotal());
-        
-        //TODO Use more complicated suite with failures, warning and postponed tests
+        assertEquals(1, (int)suiteStatistic.getPostponed());
         
     }
     

@@ -3,6 +3,14 @@
 
 	<test id="1" mapping="net.mindengine.oculus.test.sample.TestWith3Actions">
     </test>
+    
+    <test id="2" mapping="net.mindengine.oculus.test.sample.TestEmpty">
+    	<depends>
+    		<test>3</test>
+    	</depends>
+    </test>
 
+	<test id="3" mapping="net.mindengine.oculus.test.sample.TestWithFailure">
+    </test>
     
 </suite>
