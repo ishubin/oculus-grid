@@ -157,25 +157,8 @@ public class SuiteTaskRunner extends TaskRunner {
 			executor.execute(cmdLine);
 			
 			System.out.println(stdout.toString());
-			/*
-			Runtime runtime = Runtime.getRuntime();
-			Process process = runtime.exec(processCommand, null, new File(currentProjectDir));
-
 			//TODO create a handler which waits for a response form launched process and in case there is no response - it kills it and reports error.
 			
-			BufferedReader inputStreamReader = new BufferedReader(new InputStreamReader((process.getInputStream())));
-			BufferedReader errorStreamReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-			String consoleText = null;
-			String errorText = null;
-			while (((consoleText = inputStreamReader.readLine()) != null) || (errorText = errorStreamReader.readLine()) != null) {
-				if (consoleText != null) {
-					System.out.println(consoleText);
-				}
-				else if (errorText != null) {
-					System.out.println(errorText);
-				}
-			}
-			*/
 			/*
 			 * Removing the temporary suite file
 			 */
