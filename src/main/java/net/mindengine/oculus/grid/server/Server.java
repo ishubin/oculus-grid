@@ -417,7 +417,7 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
         Server server = new Server();
         
         Properties properties = new Properties();
-        properties.load(new FileReader(new File(GridUtils.getMandatoryResourceFile(Server.class, "/grid.server.properties"))));
+        properties.load(new FileReader(new File("grid.server.properties")));
         Integer port = Integer.parseInt(properties.getProperty(ServerProperties.SERVER_PORT));
         String strStoreCompletedTasksTime = properties.getProperty(ServerProperties.SERVER_STORE_COMPLETED_TASKS_TIME);
         if (strStoreCompletedTasksTime == null || strStoreCompletedTasksTime.isEmpty()) {

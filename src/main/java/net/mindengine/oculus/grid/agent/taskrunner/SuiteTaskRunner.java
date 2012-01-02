@@ -19,6 +19,7 @@
 package net.mindengine.oculus.grid.agent.taskrunner;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -31,6 +32,10 @@ import net.mindengine.oculus.experior.utils.FileUtils;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
 import net.mindengine.oculus.grid.storage.Project;
 
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -129,11 +134,10 @@ public class SuiteTaskRunner extends TaskRunner {
 			 * Actually here the process command should wrap the classpath in quotes but for some reason java throws error "unable to find jarfile"
 			 * 
 			 */
-			
-			String processCommand = "java -classpath " + pathToOculusGrid + jSeparator 
+			String processCommand = "java -classpath \"" + pathToOculusGrid + jSeparator 
 			    + currentProjectDir + File.separator + "libs" + File.separator + "*" + jSeparator
 			    + currentProjectDir + File.separator + "lib" + File.separator + "*" + jSeparator
-			    + currentProjectDir + File.separator + "*" 
+			    + currentProjectDir + File.separator + "*\"" 
 			    + " " + oculusRunnerClasspath 
 			    + " localhost " 
 			    + getAgent().getAgentPort() + " " 
@@ -143,6 +147,17 @@ public class SuiteTaskRunner extends TaskRunner {
 			logger.info("Working directory is: " + currentProjectDir);
 			logger.info("Executing the process: \n" + processCommand);
 
+			
+			CommandLine cmdLine = CommandLine.parse(processCommand);
+			DefaultExecutor executor = new DefaultExecutor();
+			executor.setWorkingDirectory(new File(currentProjectDir));
+			ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+            PumpStreamHandler psh = new PumpStreamHandler(stdout);
+            executor.setStreamHandler(psh);
+			executor.execute(cmdLine);
+			
+			System.out.println(stdout.toString());
+			/*
 			Runtime runtime = Runtime.getRuntime();
 			Process process = runtime.exec(processCommand, null, new File(currentProjectDir));
 
@@ -160,6 +175,7 @@ public class SuiteTaskRunner extends TaskRunner {
 					System.out.println(errorText);
 				}
 			}
+			*/
 			/*
 			 * Removing the temporary suite file
 			 */

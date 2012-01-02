@@ -22,6 +22,11 @@
       <artifactId>oculus-experior</artifactId>
       <version>12.1.1-SNAPSHOT</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-exec</artifactId>
+      <version>1.1</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

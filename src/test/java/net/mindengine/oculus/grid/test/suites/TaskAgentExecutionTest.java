@@ -17,7 +17,9 @@ import net.mindengine.oculus.grid.GridUtils;
 import net.mindengine.oculus.grid.agent.Agent;
 import net.mindengine.oculus.grid.client.GridClient;
 import net.mindengine.oculus.grid.domain.task.DefaultTask;
+import net.mindengine.oculus.grid.domain.task.SuiteStatistic;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
+import net.mindengine.oculus.grid.domain.task.TaskInformation;
 import net.mindengine.oculus.grid.domain.task.TaskStatus;
 import net.mindengine.oculus.grid.runner.DefaultOculusRunner;
 import net.mindengine.oculus.grid.server.Server;
@@ -173,21 +175,26 @@ public class TaskAgentExecutionTest {
         assertFileExists(OCULUS_TEST_HOME+"/data/storage-agent-1/sample-project/current/sample-project-current.jar");
         assertFileExists(OCULUS_TEST_HOME+"/data/storage-agent-1/sample-project/current/experior.properties");
         
-        //TODO verify that actions of the test were run properly.
-        /*
-         * For this we need to change oculus-sample-project so it would save data to a file. 
-         * 
-         * Lately the contents of the file would be verified here.
-         * 
-         * Also it is important to remove this file every time the test starts. 
-         */
-        //Will have to setup agent executor.
-        
         assertFileExists(testLogFile.getAbsolutePath());
         String log = FileUtils.readFileToString(testLogFile);
-        
-        
         assertEquals("[beforeTest][action1][action2][action3][afterTest]", log);
+        
+        
+        TaskInformation[] tasks = client.getServer().getTasks(taskId);
+        assertNotNull(tasks);
+        assertEquals(1, tasks.length);
+        TaskStatus suiteTaskStatus = client.getServer().getTaskStatus(tasks[0].getTaskId());
+        
+        assertNotNull(suiteTaskStatus.getSuiteInformation());
+        SuiteStatistic suiteStatistic = suiteTaskStatus.getSuiteInformation().calculateStatistics();
+        assertEquals(0, (int)suiteStatistic.getFailed());
+        assertEquals(0, (int)suiteStatistic.getWarning());
+        assertEquals(1, (int)suiteStatistic.getPassed());
+        assertEquals(0, (int)suiteStatistic.getPostponed());
+        assertEquals(1, (int)suiteStatistic.getTotal());
+        
+        //TODO Use more complicated suite with failures, warning and postponed tests
+        
     }
     
 }

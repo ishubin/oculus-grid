@@ -52,7 +52,7 @@ import org.apache.commons.logging.LogFactory;
  * Test Run Manager Agent.<br>
  * Used for running tasks and automation suites.<br>
  * Manages the RMI connection with the server. All the RMI configuration is
- * defined in "agent.properties" file
+ * defined in "grid.agent.properties" file
  * 
  * @author Ivan Shubin
  * 
@@ -174,7 +174,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	    
 		this.task = task;
 		logger.info("Running task " + task);
-		taskStatus = new TaskStatus();
+		taskStatus = task.getTaskStatus();
 		taskRunner = TaskRunner.createTaskRunner(task);
 		taskRunner.setAgent(this);
 		if (task instanceof SuiteTask) {
@@ -219,6 +219,19 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	}
 
 	@Override
+    public void onTestStarted(TestStatus testStatus) {
+        logger.info(testStatus.getName());
+        try {
+            taskStatus.getSuiteInformation().changeTestStatus(testStatus.getCustomId(), testStatus);
+            server.updateTaskStatus(task.getId(), taskStatus);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+	
+	@Override
 	public void onTestFinished(TestStatus testStatus) {
 		logger.info(testStatus.getName());
 		
@@ -229,18 +242,6 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-
-	@Override
-	public void onTestStarted(TestStatus testStatus) {
-		logger.info(testStatus.getName());
-		try {
-		    taskStatus.getSuiteInformation().changeTestStatus(testStatus.getCustomId(), testStatus);
-		    server.updateTaskStatus(task.getId(), taskStatus);
-		}
-		catch (Exception e) {
-            e.printStackTrace();
-        }
 	}
 
 	@Override
@@ -418,7 +419,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
     public static void main(String[] args) throws Exception {
         Agent agent = new Agent();
         Properties properties = new Properties();
-        properties.load(new FileReader(new File(GridUtils.getMandatoryResourceFile(Agent.class, "/grid.agent.properties"))));
+        properties.load(new FileReader(new File("grid.agent.properties")));
         agent.serverHost = properties.getProperty(AgentProperties.SERVER_HOST);
         agent.serverPort = Integer.parseInt(properties.getProperty(AgentProperties.SERVER_PORT));
         agent.serverName = properties.getProperty(AgentProperties.SERVER_NAME);

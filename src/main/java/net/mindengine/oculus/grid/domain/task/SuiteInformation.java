@@ -36,7 +36,6 @@ public class SuiteInformation {
             statistic.setTotal(tests.size());
             for(TestStatus test : tests) {
                 if(test.getPhase()==TestInformation.PHASE_DONE) {
-                    statistic.setTotal(statistic.getTotal()+1);
                     
                     if(test.getStatus()==TestInformation.STATUS_FAILED) {
                         statistic.setFailed(statistic.getFailed()+1);
