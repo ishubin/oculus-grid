@@ -157,7 +157,6 @@ public class SuiteTaskRunner extends TaskRunner {
 			executor.execute(cmdLine);
 			
 			System.out.println(stdout.toString());
-			//TODO create a handler which waits for a response form launched process and in case there is no response - it kills it and reports error.
 			
 			/*
 			 * Removing the temporary suite file
