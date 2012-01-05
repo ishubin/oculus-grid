@@ -18,6 +18,8 @@
  ******************************************************************************/
 package net.mindengine.oculus.grid.domain.task;
 
+import java.util.Date;
+
 
 
 /**
@@ -34,6 +36,9 @@ public class TaskInformation {
     private TaskUser taskUser;
     private String type;
     private Integer childTasksAmount;
+    private Date completedDate;
+    private Date createdDate;
+    private Date startedDate;
     public Long getTaskId() {
         return taskId;
     }
@@ -75,6 +80,24 @@ public class TaskInformation {
     }
     public Integer getChildTasksAmount() {
         return childTasksAmount;
+    }
+    public Date getCompletedDate() {
+        return completedDate;
+    }
+    public void setCompletedDate(Date completedDate) {
+        this.completedDate = completedDate;
+    }
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+    public Date getStartedDate() {
+        return startedDate;
+    }
+    public void setStartedDate(Date startedDate) {
+        this.startedDate = startedDate;
     }
     
 }

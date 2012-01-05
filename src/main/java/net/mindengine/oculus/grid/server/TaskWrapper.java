@@ -101,6 +101,9 @@ public class TaskWrapper {
 	    info.setTaskStatus(getTask().getTaskStatus());
 	    info.setTaskUser(getTask().getTaskUser());
 	    info.setType(getTask().type());
+	    info.setCompletedDate(getTask().getCompletedDate());
+	    info.setCreatedDate(getTask().getCreatedDate());
+	    info.setStartedDate(getTask().getStartedDate());
 	    
 	    if(parent!=null) {
 	        info.setParentId(parent.getId());

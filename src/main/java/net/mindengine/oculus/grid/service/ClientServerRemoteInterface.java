@@ -78,7 +78,8 @@ public interface ClientServerRemoteInterface extends Remote {
 	public AgentStatus[] getAgents();
 
 	/**
-	 * Searches for all user tasks in TRMServer.
+	 * Searches for all user tasks in Grid server.
+	 * Returns only root tasks. 
 	 * 
 	 * @param userId
 	 *            Id of the user
