@@ -18,11 +18,8 @@
  ******************************************************************************/
 package net.mindengine.oculus.grid.client;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 
-import net.mindengine.jeremy.bin.RemoteFile;
 import net.mindengine.jeremy.registry.Lookup;
 import net.mindengine.oculus.grid.service.ClientServerRemoteInterface;
 
@@ -38,15 +35,7 @@ public class GridProjectUpload {
 			throw new Exception("The server wasn't found");
 
 		File file = new File(zipFilePath);
-		byte buffer[] = new byte[(int) file.length()];
-		BufferedInputStream input = new BufferedInputStream(new FileInputStream(zipFilePath));
-		input.read(buffer, 0, buffer.length);
-		input.close();
-
-		RemoteFile remoteFile = new RemoteFile();
-		remoteFile.setBytes(buffer);
-		remoteFile.setName(file.getName());
-		server.uploadProject(projectName, projectVersion, remoteFile, userName);
+		server.uploadProject(projectName, projectVersion, file, userName);
 	}
 
 	public static String getArgument(String name, String [] args, boolean mandatory, String description) {

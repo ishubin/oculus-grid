@@ -25,7 +25,6 @@ import java.util.Map;
 
 import net.mindengine.jeremy.client.Client;
 import net.mindengine.jeremy.messaging.LanguageHandler;
-import net.mindengine.jeremy.messaging.binary.DefaultBinaryLanguageHandler;
 import net.mindengine.jeremy.messaging.json.DefaultJsonLanguageHandler;
 import net.mindengine.jeremy.registry.Lookup;
 import net.mindengine.jeremy.registry.Registry;
@@ -49,16 +48,15 @@ public class GridUtils {
         lookup.setClient(new Client());
         lookup.setDefaultLanguage(Client.LANGUAGE_JSON);
         Map<String, LanguageHandler> languageHandlers = new HashMap<String, LanguageHandler>();
-        languageHandlers.put(Client.LANGUAGE_BINARY, new DefaultBinaryLanguageHandler());
         languageHandlers.put(Client.LANGUAGE_JSON, new DefaultJsonLanguageHandler());
         lookup.setLanguageHandlers(languageHandlers);
+        lookup.setDefaultLanguage(Client.LANGUAGE_JSON);
         return lookup;
     }
     
     public static Registry createDefaultRegistry() {
         Registry registry = new Registry();
         registry.addLanguageHandler(Client.LANGUAGE_JSON, new DefaultJsonLanguageHandler());
-        registry.addLanguageHandler(Client.LANGUAGE_BINARY, new DefaultBinaryLanguageHandler());
         registry.setDefaultLanguage(Client.LANGUAGE_JSON);
         return registry;
     }

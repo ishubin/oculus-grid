@@ -18,12 +18,12 @@
  ******************************************************************************/
 package net.mindengine.oculus.grid.service;
 
+import java.io.File;
 import java.rmi.Remote;
 
 import net.mindengine.oculus.grid.domain.agent.AgentId;
 import net.mindengine.oculus.grid.domain.agent.AgentInformation;
 import net.mindengine.oculus.grid.domain.task.TaskStatus;
-import net.mindengine.oculus.grid.storage.Project;
 
 /**
  * Implemented by Test Run Manager Server and specifies the messages from
@@ -88,5 +88,5 @@ public interface AgentServerRemoteInterface extends Remote {
      * @return
      * @throws Exception 
      */
-    public Project downloadProject(String projectName, String projectVersion) throws Exception;
+    public File downloadProject(String projectName, String projectVersion) throws Exception;
 }

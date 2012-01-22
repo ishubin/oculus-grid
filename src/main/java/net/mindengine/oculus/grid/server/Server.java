@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
 
-import net.mindengine.jeremy.bin.RemoteFile;
 import net.mindengine.jeremy.registry.Lookup;
 import net.mindengine.jeremy.registry.Registry;
 import net.mindengine.oculus.grid.GridProperties;
@@ -44,9 +43,9 @@ import net.mindengine.oculus.grid.service.ClientServerRemoteInterface;
 import net.mindengine.oculus.grid.service.ServerAgentRemoteInterface;
 import net.mindengine.oculus.grid.service.exceptions.IncorrectTaskException;
 import net.mindengine.oculus.grid.storage.DefaultGridStorage;
-import net.mindengine.oculus.grid.storage.Project;
 import net.mindengine.oculus.grid.storage.Storage;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -394,8 +393,9 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
     }
 
     @Override
-    public void uploadProject(String projectPath, String version, RemoteFile file, String userName) throws Exception {
-        storage.putProjectZip(projectPath, version, file.getBytes(), userName, null);
+    public void uploadProject(String projectPath, String version, File file, String userName) throws Exception {
+        byte[] bytes = FileUtils.readFileToByteArray(file);
+        storage.putProjectZip(projectPath, version, bytes, userName, null);
     }
 
     @Override
@@ -409,7 +409,7 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
     }
     
     @Override
-    public Project downloadProject(String projectName, String projectVersion) throws Exception {
+    public File downloadProject(String projectName, String projectVersion) throws Exception {
         return storage.downloadProjectFromStorage(projectName, projectVersion);
     }
     

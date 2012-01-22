@@ -134,14 +134,16 @@ public class TaskAgentExecutionTest {
         lookup.setUrl("http://localhost:8200");
         AgentServerRemoteInterface server = lookup.getRemoteObject("server", AgentServerRemoteInterface.class);
         
-        Project project = server.downloadProject("sample-project", "current");
-        assertNotNull(project);
-        assertNotNull(project.getBytes());
-        assertTrue(project.getBytes().length>1000);
-        assertEquals("iamacontrolkey", project.getControlKey());
-        assertEquals("sample-project-current.zip", project.getName());
-        assertEquals("sample-project", project.getProjectName());
-        assertEquals("current", project.getProjectVersion());
+        File file = server.downloadProject("sample-project", "current");
+        assertNotNull(file);
+        assertTrue(file.exists());
+        
+        byte[] bytes = FileUtils.readFileToByteArray(file);
+        assertTrue(bytes.length>1000);
+        
+        String controlKey = server.getProjectControlCode("sample-project", "current");
+        
+        assertEquals("iamacontrolkey", controlKey);
     }
     
     public void assertFileExists(String filePath){

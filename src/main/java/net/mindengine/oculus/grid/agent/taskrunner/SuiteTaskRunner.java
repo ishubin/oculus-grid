@@ -18,24 +18,19 @@
  ******************************************************************************/
 package net.mindengine.oculus.grid.agent.taskrunner;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.Random;
 
 import net.mindengine.oculus.experior.suite.XmlSuiteParser;
-import net.mindengine.oculus.experior.utils.FileUtils;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
-import net.mindengine.oculus.grid.storage.Project;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
-import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -63,8 +58,11 @@ public class SuiteTaskRunner extends TaskRunner {
 			SuiteTask task = (SuiteTask) getTask();
 			
 			if(getProjectSyncNeeded()) {
-			    Project project = getAgent().getServer().downloadProject(task.getProjectName(), task.getProjectVersion());
-			    getAgent().getStorage().putProjectZip(task.getProjectName(), task.getProjectVersion(), project.getBytes(), "agent", project.getControlKey());
+			    File projectFile = getAgent().getServer().downloadProject(task.getProjectName(), task.getProjectVersion());
+			    String controlCode = getAgent().getServer().getProjectControlCode(task.getProjectName(), task.getProjectVersion());
+			    
+			    byte[] bytes = FileUtils.readFileToByteArray(projectFile);
+			    getAgent().getStorage().putProjectZip(task.getProjectName(), task.getProjectVersion(), bytes, "agent", controlCode);
 			}
 			
 

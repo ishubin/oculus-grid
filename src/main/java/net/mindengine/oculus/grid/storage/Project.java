@@ -1,8 +1,9 @@
 package net.mindengine.oculus.grid.storage;
 
-import net.mindengine.jeremy.bin.RemoteFile;
+import java.io.Serializable;
 
-public class Project extends RemoteFile {
+
+public class Project implements Serializable{
 
     /**
      * 

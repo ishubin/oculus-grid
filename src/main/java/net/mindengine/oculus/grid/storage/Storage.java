@@ -1,5 +1,8 @@
 package net.mindengine.oculus.grid.storage;
 
+import java.io.File;
+
+
 /**
  * Used to store automation projects and synchronize them across all grid nodes
  * @author Ivan Shubin
@@ -33,5 +36,5 @@ public interface Storage {
      * @return
      * @throws Exception
      */
-    public Project downloadProjectFromStorage(String name, String version) throws Exception;
+    public File downloadProjectFromStorage(String name, String version) throws Exception;
 }

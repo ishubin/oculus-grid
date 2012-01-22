@@ -18,9 +18,9 @@
  ******************************************************************************/
 package net.mindengine.oculus.grid.service;
 
+import java.io.File;
 import java.rmi.Remote;
 
-import net.mindengine.jeremy.bin.RemoteFile;
 import net.mindengine.oculus.grid.domain.agent.AgentInformation;
 import net.mindengine.oculus.grid.domain.agent.AgentStatus;
 import net.mindengine.oculus.grid.domain.task.DefaultTask;
@@ -123,7 +123,7 @@ public interface ClientServerRemoteInterface extends Remote {
 	 * @param userName Name of user who performs the project upload
 	 * @throws Exception
 	 */
-	public void uploadProject(String projectName, String version, RemoteFile file, String userName ) throws Exception;
+	public void uploadProject(String projectName, String version, File file, String userName ) throws Exception;
 
 	/**
 	 * Returns array of tasks which belong to the specified task

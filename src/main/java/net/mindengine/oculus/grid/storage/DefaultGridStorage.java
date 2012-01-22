@@ -133,22 +133,16 @@ public class DefaultGridStorage implements Storage {
     }
     
     @Override
-    public Project downloadProjectFromStorage(final String name, final String version) throws Exception {
+    public File downloadProjectFromStorage(final String name, final String version) throws Exception {
         lock.lock(name, version);
-        Project project = null;
+        
+        File file = null;
         try {
             String pathToProjectZip = getPathToProjectZip(name, version);
-            File file = new File(pathToProjectZip);
+            file = new File(pathToProjectZip);
             if(!file.exists()) {
                 throw new FileNotFoundException("File for project '"+name+"' with version '"+version+"' is not found: "+pathToProjectZip);
-            }
-            
-            project = new Project();
-            project.setBytes(FileUtils.readFileToByteArray(file));
-            project.setName(name+"-"+version+".zip");
-            project.setProjectName(name);
-            project.setProjectVersion(version);
-            project.setControlKey(fetchProjectControlKey(name, version));
+            } 
         }
         catch (Exception e) {
             throw e;
@@ -156,7 +150,7 @@ public class DefaultGridStorage implements Storage {
         finally{
             lock.unlock(name, version);
         }
-        return project;
+        return file;
     }
     
     protected ParametrizedThreadLock lock() {
