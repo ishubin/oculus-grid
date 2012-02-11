@@ -39,8 +39,7 @@ import net.mindengine.oculus.grid.domain.task.TestStatus;
  * 
  */
 public abstract class OculusRunner implements TestRunListener, SuiteInterruptListener {
-	private static final long serialVersionUID = -750851021970496017L;
-
+	
 	private Suite suite;
 	private AgentTestRunnerListener agentTestRunnerListener;
 

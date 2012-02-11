@@ -58,10 +58,10 @@ public class SuiteInformation {
         return statistic;
     }
     
-    public void changeTestStatus(Long customId, TestStatus testStatus) {
+    public void changeTestStatus(String customId, TestStatus testStatus) {
         int i=0;
         for(TestStatus ts : tests) {
-            if(customId == ts.getCustomId()) {
+            if(customId.equals(ts.getCustomId())) {
                 tests.set(i, testStatus);
                 return;
             }

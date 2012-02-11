@@ -159,13 +159,13 @@ public class TaskTest {
         
         List<TestStatus> tests = childTasks[0].getTaskStatus().getSuiteInformation().getTests();
         assertEquals("net.mindengine.oculus.experior.samples.Sample2_B", tests.get(0).getMapping());
-        assertEquals(1, (long)tests.get(0).getCustomId());
+        assertEquals("1", tests.get(0).getCustomId());
         
         assertEquals("net.mindengine.oculus.experior.samples.Sample2_B", tests.get(1).getMapping());
-        assertEquals(345, (long)tests.get(1).getCustomId());
+        assertEquals("345", tests.get(1).getCustomId());
         
         assertEquals("net.mindengine.oculus.experior.samples.Sample2_A", tests.get(2).getMapping());
-        assertEquals(123, (long)tests.get(2).getCustomId());
+        assertEquals("123", tests.get(2).getCustomId());
         
     }
     

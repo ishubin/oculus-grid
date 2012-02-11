@@ -25,7 +25,7 @@ public class TestStatus {
     private String name;
     private String mapping;
     private String description;
-    private Long customId;
+    private String customId;
     private Long testRunId;
     
     /**
@@ -40,7 +40,7 @@ public class TestStatus {
     public TestStatus() {
     }
     
-    public TestStatus(String name, String mapping, String description, Long customId, Integer status, Integer phase) {
+    public TestStatus(String name, String mapping, String description, String customId, Integer status, Integer phase) {
         super();
         this.name = name;
         this.mapping = mapping;
@@ -80,10 +80,10 @@ public class TestStatus {
     public String getDescription() {
         return description;
     }
-    public void setCustomId(Long customId) {
+    public void setCustomId(String customId) {
         this.customId = customId;
     }
-    public Long getCustomId() {
+    public String getCustomId() {
         return customId;
     }
 
