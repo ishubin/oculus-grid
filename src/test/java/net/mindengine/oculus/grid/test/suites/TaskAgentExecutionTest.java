@@ -26,7 +26,6 @@ import net.mindengine.oculus.grid.server.Server;
 import net.mindengine.oculus.grid.service.AgentServerRemoteInterface;
 import net.mindengine.oculus.grid.storage.DefaultAgentStorage;
 import net.mindengine.oculus.grid.storage.DefaultGridStorage;
-import net.mindengine.oculus.grid.storage.Project;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
