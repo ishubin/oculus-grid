@@ -431,7 +431,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
         agent.agentReconnectionTimeout = Integer.parseInt(properties.getProperty(AgentProperties.AGENT_RECONNECT_TIMEOUT));
         agent.agentDescription = properties.getProperty(AgentProperties.AGENT_DESCRIPTION);
         agent.agentStoragePath = properties.getProperty(GridProperties.STORAGE_PATH);
-        agent.agentOculusGridLibrary = properties.getProperty(AgentProperties.AGENT_OCULUS_GRID_LIBRARY);
+        agent.agentOculusGridLibrary = properties.getProperty(GridProperties.GRID_LIBRARY);
         agent.AgentOculusRunner = properties.getProperty(AgentProperties.AGENT_OCULUS_RUNNER);
         
         DefaultAgentStorage storage = new DefaultAgentStorage();

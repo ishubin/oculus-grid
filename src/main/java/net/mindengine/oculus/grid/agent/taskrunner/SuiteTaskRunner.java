@@ -44,9 +44,7 @@ public class SuiteTaskRunner extends TaskRunner {
 	private Log logger = LogFactory.getLog(getClass());
 
 	public void downloadProjectFromServer(String projectName, String version) {
-	    
 	}
-	
 	
 	@Override
 	public void run() {
