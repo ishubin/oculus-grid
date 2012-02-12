@@ -37,4 +37,12 @@ public interface Storage {
      * @throws Exception
      */
     public File downloadProjectFromStorage(String name, String version) throws Exception;
+
+    /**
+     * Returns local path to specified project in storage
+     * @param projectName Name of project
+     * @param projectVersion Version of project
+     * @return
+     */
+    public String getProjectPath(String projectName, String projectVersion);
 }

@@ -59,7 +59,7 @@ public class DefaultGridStorage implements Storage {
     }
     
     protected String getPathToProjectZip(String name, String version) {
-        StringBuffer path = new StringBuffer(getPathToProject(name, version));
+        StringBuffer path = new StringBuffer(getProjectPath(name, version));
         path.append(File.separator);
         path.append(name);
         path.append("-");
@@ -72,7 +72,7 @@ public class DefaultGridStorage implements Storage {
     public String putProjectZip(final String name, final String version, byte[] content, String user, String controlKey) throws Exception{
         lock.lock(name, version);
         try {
-            String pathToProject = getPathToProject(name, version);
+            String pathToProject = getProjectPath(name, version);
             File file = new File(pathToProject);
             if(!file.exists()) {
                 file.mkdirs();
@@ -210,20 +210,20 @@ public class DefaultGridStorage implements Storage {
     }
     
     public String getPathToGridProjectfile(String name, String version) {
-        StringBuffer path = new StringBuffer(getPathToProject(name, version));
+        StringBuffer path = new StringBuffer(getProjectPath(name, version));
         path.append(File.separator);
         path.append(_GRIDPROJECT);
         return path.toString();
     }
-    
-    public String getPathToProject(String projectName, String version) {
+    @Override
+    public String getProjectPath(String projectName, String projectVersion) {
         StringBuffer buff = new StringBuffer(storagePath);
         if(!storagePath.endsWith(File.separator)) {
             buff.append(File.separator);
         }
         buff.append(projectName);
         buff.append(File.separator);
-        buff.append(version);
+        buff.append(projectVersion);
         return buff.toString();
     }
 

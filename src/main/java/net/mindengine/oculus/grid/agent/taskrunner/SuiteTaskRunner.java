@@ -55,6 +55,10 @@ public class SuiteTaskRunner extends TaskRunner {
 			 */
 			SuiteTask task = (SuiteTask) getTask();
 			
+			if(getAgent().getStorage()==null) {
+			    throw new NullPointerException("Agent storage is not specified");
+			}
+			
 			if(getProjectSyncNeeded()) {
 			    File projectFile = getAgent().getServer().downloadProject(task.getProjectName(), task.getProjectVersion());
 			    String controlCode = getAgent().getServer().getProjectControlCode(task.getProjectName(), task.getProjectVersion());
@@ -63,28 +67,14 @@ public class SuiteTaskRunner extends TaskRunner {
 			    getAgent().getStorage().putProjectZip(task.getProjectName(), task.getProjectVersion(), bytes, "agent", controlCode);
 			}
 			
-
-			String projectFolder = task.getProjectName() + File.separator;
-			if (task.getProjectVersion() != null && !task.getProjectVersion().isEmpty()) {
-				projectFolder += task.getProjectVersion();
-			}
-			else {
-				projectFolder += "current";
-			}
-
-			String storagePath = getAgent().getAgentStoragePath();
+			String currentProjectDir = getAgent().getStorage().getProjectPath(task.getProjectName(), task.getProjectVersion());
 			String pathToOculusGrid = getAgent().getAgentOculusGridLibrary();
 			
 			if(!new File(pathToOculusGrid).exists()) {
 			    throw new FileNotFoundException(pathToOculusGrid);
 			}
 			
-			String currentProjectDir = storagePath + File.separator + projectFolder;
 			String oculusRunnerClasspath = getAgent().getAgentOculusRunner();
-			
-			if(storagePath==null) {
-			    throw new IllegalArgumentException("Agent storage path is not specified");
-			}
 			if(pathToOculusGrid==null) {
                 throw new IllegalArgumentException("Path to oculus grid library is not specified");
             }
@@ -103,7 +93,7 @@ public class SuiteTaskRunner extends TaskRunner {
 			}
 
 			/*
-			 * Going to create a temporary suite where all the received tests
+			 * Going to create a temporary suite where all received tests
 			 * will be stored. In order to avoid the collision in suite file
 			 * name with another agents on same machine we would need to
 			 * generate suite file name with current date and a random number
@@ -136,8 +126,8 @@ public class SuiteTaskRunner extends TaskRunner {
 			    + currentProjectDir + File.separator + "*\"" 
 			    + " " + oculusRunnerClasspath 
 			    + " localhost " 
-			    + getAgent().getAgentPort() + " " 
-			    + getAgent().getAgentRemoteName() + " " 
+			    + getAgent().getAgentInformation().getPort() + " " 
+			    + getAgent().getAgentInformation().getRemoteName() + " " 
 			    + suiteFileName;
 
 			logger.info("Working directory is: " + currentProjectDir);

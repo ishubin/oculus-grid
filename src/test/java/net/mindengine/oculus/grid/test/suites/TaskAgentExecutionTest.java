@@ -16,6 +16,7 @@ import net.mindengine.oculus.experior.suite.XmlSuiteParser;
 import net.mindengine.oculus.grid.GridUtils;
 import net.mindengine.oculus.grid.agent.Agent;
 import net.mindengine.oculus.grid.client.GridClient;
+import net.mindengine.oculus.grid.domain.agent.AgentInformation;
 import net.mindengine.oculus.grid.domain.task.DefaultTask;
 import net.mindengine.oculus.grid.domain.task.SuiteStatistic;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
@@ -53,14 +54,18 @@ public class TaskAgentExecutionTest {
         @Override
         public void run() {
             try {
-                agent.setAgentHost("localhost");
-                agent.setAgentPort(8201);
-                agent.setAgentName("Agent 1");
-                agent.setAgentReconnectionTimeout(10);
-                agent.setAgentRemoteName("agent");
+                
+                AgentInformation agentInformation = new AgentInformation();
+                agentInformation.setHost("localhost");
+                agentInformation.setPort(8201);
+                agentInformation.setName("Agent 1");
+                agentInformation.setRemoteName("agent");
+                agent.setAgentInformation(agentInformation);
+                
+                
                 DefaultAgentStorage storage = new DefaultAgentStorage();
                 storage.setStoragePath(OCULUS_TEST_HOME+"/data/storage-agent-1");
-                agent.setAgentStoragePath(OCULUS_TEST_HOME+"/data/storage-agent-1");
+                agent.setAgentReconnectionTimeout(10);
                 agent.setAgentOculusGridLibrary(OCULUS_TEST_HOME+"/data/grid-library/oculus-grid.jar");
                 agent.setAgentOculusRunner(DefaultOculusRunner.class.getName());
                 agent.setStorage(storage);

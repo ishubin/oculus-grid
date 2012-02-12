@@ -61,7 +61,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	
 	private Log logger = LogFactory.getLog(getClass());
 
-	private AgentInformation agentInformation = new AgentInformation();
+	private AgentInformation agentInformation;
 	private AgentServerRemoteInterface server;
 	
 	private AgentConnectionChecker agentConnectionChecker = new AgentConnectionChecker();
@@ -73,16 +73,10 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	private String serverHost;
 	private Integer serverPort;
 	
-	private String agentRemoteName;
-    private String agentHost;
-    private String agentName;
-    private String agentDescription;
-    private Integer agentPort;
-    private Integer agentReconnectionTimeout = 5;
+	private Integer agentReconnectionTimeout = 5;
     
-    private String agentStoragePath;
     private String agentOculusGridLibrary;
-    private String AgentOculusRunner;
+    private String agentOculusRunner;
     
     private Storage storage;
     private Registry registry = GridUtils.createDefaultRegistry();
@@ -106,16 +100,11 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 
 	public void startConnection() throws Exception {
 		// Detecting the machines name
-	    if(agentHost==null || agentHost.trim().isEmpty()) {
+	    String host = agentInformation.getHost();
+	    if(host==null || host.trim().isEmpty()) {
 	        InetAddress addr = InetAddress.getLocalHost();
-	        agentHost = addr.getHostName();
+	        host = addr.getHostName();
 	    }
-	    
-	    getAgentInformation().setHost(agentHost);
-		getAgentInformation().setName(agentName);
-		getAgentInformation().setRemoteName(agentRemoteName);
-		getAgentInformation().setDescription(agentDescription);
-		getAgentInformation().setPort(agentPort);
 
 		logger.info("Starting agent: " + getAgentInformation());
 
@@ -333,8 +322,8 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
         this.server = (AgentServerRemoteInterface) lookup.getRemoteObject(serverName, AgentServerRemoteInterface.class);
         this.lookup = lookup;
         
-        registry.addObject(agentRemoteName, this);
-        registry.setPort(agentPort);
+        registry.addObject(agentInformation.getRemoteName(), this);
+        registry.setPort(agentInformation.getPort());
         
         RegistryStarter registryStarter = new RegistryStarter();
         registryStarter.setRegistry(registry);
@@ -372,22 +361,6 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
         return serverPort;
     }
 
-    public String getAgentRemoteName() {
-        return agentRemoteName;
-    }
-
-    public String getAgentHost() {
-        return agentHost;
-    }
-
-    public String getAgentName() {
-        return agentName;
-    }
-
-    public Integer getAgentPort() {
-        return agentPort;
-    }
-
     public void setServerName(String serverName) {
         this.serverName = serverName;
     }
@@ -400,45 +373,46 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
         this.serverPort = serverPort;
     }
 
-    public void setAgentRemoteName(String agentRemoteName) {
-        this.agentRemoteName = agentRemoteName;
-    }
-
-    public void setAgentHost(String agentHost) {
-        this.agentHost = agentHost;
-    }
-
-    public void setAgentName(String agentName) {
-        this.agentName = agentName;
-    }
-
-    public void setAgentPort(Integer agentPort) {
-        this.agentPort = agentPort;
-    }
-
     public static void main(String[] args) throws Exception {
         Agent agent = new Agent();
         Properties properties = new Properties();
         properties.load(new FileReader(new File("grid.agent.properties")));
-        agent.serverHost = properties.getProperty(AgentProperties.SERVER_HOST);
-        agent.serverPort = Integer.parseInt(properties.getProperty(AgentProperties.SERVER_PORT));
-        agent.serverName = properties.getProperty(AgentProperties.SERVER_NAME);
+        agent.setServerHost(properties.getProperty(AgentProperties.SERVER_HOST));
+        agent.setServerPort(Integer.parseInt(properties.getProperty(AgentProperties.SERVER_PORT)));
+        agent.setServerName(properties.getProperty(AgentProperties.SERVER_NAME));
         
-        agent.agentHost = properties.getProperty(AgentProperties.AGENT_HOST);
-        agent.agentPort = Integer.parseInt(properties.getProperty(AgentProperties.AGENT_PORT));
-        agent.agentName = properties.getProperty(AgentProperties.AGENT_NAME);
-        agent.agentRemoteName = properties.getProperty(AgentProperties.AGENT_REMOTE_NAME);
-        agent.agentReconnectionTimeout = Integer.parseInt(properties.getProperty(AgentProperties.AGENT_RECONNECT_TIMEOUT));
-        agent.agentDescription = properties.getProperty(AgentProperties.AGENT_DESCRIPTION);
-        agent.agentStoragePath = properties.getProperty(GridProperties.STORAGE_PATH);
-        agent.agentOculusGridLibrary = properties.getProperty(GridProperties.GRID_LIBRARY);
-        agent.AgentOculusRunner = properties.getProperty(AgentProperties.AGENT_OCULUS_RUNNER);
+        
+        AgentInformation agentInformation = new AgentInformation();
+        agentInformation.setHost(properties.getProperty(AgentProperties.AGENT_HOST));
+        agentInformation.setPort(Integer.parseInt(properties.getProperty(AgentProperties.AGENT_PORT)));
+        agentInformation.setName(properties.getProperty(AgentProperties.AGENT_NAME));
+        agentInformation.setRemoteName(properties.getProperty(AgentProperties.AGENT_REMOTE_NAME));
+        agentInformation.setTags(loadAgentTags(properties));
+        agentInformation.setDescription(properties.getProperty(AgentProperties.AGENT_DESCRIPTION));
+        agent.setAgentInformation(agentInformation);
+        
+        agent.setAgentReconnectionTimeout(Integer.parseInt(properties.getProperty(AgentProperties.AGENT_RECONNECT_TIMEOUT)));
+        agent.setAgentOculusGridLibrary(properties.getProperty(GridProperties.GRID_LIBRARY));
+        agent.setAgentOculusRunner(properties.getProperty(AgentProperties.AGENT_OCULUS_RUNNER));
         
         DefaultAgentStorage storage = new DefaultAgentStorage();
-            
         storage.setStoragePath(properties.getProperty(GridProperties.STORAGE_PATH));
         agent.storage = storage;
         agent.startAgent();
+    }
+    
+    private static String[] loadAgentTags(Properties properties) {
+        String rowTags = properties.getProperty(AgentProperties.AGENT_TAGS);
+        if(rowTags!=null) {
+            String[] tags = rowTags.split(",");
+            for(int i=0; i<tags.length; i++) {
+                tags[i] = tags[i].trim();
+            }
+            return tags;
+        }
+        else {
+            return new String[]{};
+        }
     }
 
     public void setAgentInformation(AgentInformation agentInformation) {
@@ -473,20 +447,12 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
         this.storage = storage;
     }
 
-    public String getAgentDescription() {
-        return agentDescription;
-    }
-
-    public void setAgentDescription(String agentDescription) {
-        this.agentDescription = agentDescription;
-    }
-
     public String getAgentOculusRunner() {
-        return AgentOculusRunner;
+        return agentOculusRunner;
     }
 
     public void setAgentOculusRunner(String agentOculusRunner) {
-        AgentOculusRunner = agentOculusRunner;
+        this.agentOculusRunner = agentOculusRunner;
     }
 
     public String getAgentOculusGridLibrary() {
@@ -497,11 +463,4 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
         this.agentOculusGridLibrary = agentOculusGridLibrary;
     }
 
-    public String getAgentStoragePath() {
-        return agentStoragePath;
-    }
-
-    public void setAgentStoragePath(String agentStoragePath) {
-        this.agentStoragePath = agentStoragePath;
-    }
 }

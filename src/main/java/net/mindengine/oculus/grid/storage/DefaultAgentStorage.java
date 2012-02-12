@@ -10,7 +10,7 @@ public class DefaultAgentStorage extends DefaultGridStorage {
     public String putProjectZip(final String name, final String version, byte[] content, String user, String controlKey) throws Exception {
         lock().lock(name, version);
         try {
-            String pathToProject = getPathToProject(name, version);
+            String pathToProject = getProjectPath(name, version);
             File file = new File(pathToProject);
             if(!file.exists()) {
                 file.mkdirs();

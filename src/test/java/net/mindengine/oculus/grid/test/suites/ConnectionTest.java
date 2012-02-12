@@ -29,6 +29,7 @@ import java.util.Properties;
 import net.mindengine.oculus.grid.GridProperties;
 import net.mindengine.oculus.grid.GridUtils;
 import net.mindengine.oculus.grid.agent.Agent;
+import net.mindengine.oculus.grid.domain.agent.AgentInformation;
 import net.mindengine.oculus.grid.server.Server;
 import net.mindengine.oculus.grid.storage.DefaultAgentStorage;
 import net.mindengine.oculus.grid.storage.DefaultGridStorage;
@@ -75,10 +76,14 @@ public class ConnectionTest {
         final Agent agent = new Agent();
         Properties properties = new Properties();
         properties.load(new FileReader(new File(GridUtils.getMandatoryResourceFile(Agent.class, "/grid.agent.properties"))));
-        agent.setAgentHost("localhost");
-        agent.setAgentName("Agent");
-        agent.setAgentPort(8091);
-        agent.setAgentRemoteName("agent");
+        
+        AgentInformation agentInformation = new AgentInformation();
+        agentInformation.setHost("localhost");
+        agentInformation.setName("Agent");
+        agentInformation.setPort(8091);
+        agentInformation.setRemoteName("agent");
+        agent.setAgentInformation(agentInformation);
+        
         agent.setServerHost("localhost");
         agent.setServerName("server");
         agent.setServerPort(8090);
