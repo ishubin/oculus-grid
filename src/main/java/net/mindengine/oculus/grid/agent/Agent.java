@@ -26,6 +26,8 @@ import java.net.InetAddress;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 import net.mindengine.jeremy.registry.Lookup;
 import net.mindengine.jeremy.registry.Registry;
 import net.mindengine.jeremy.starter.RegistryStarter;
@@ -35,6 +37,7 @@ import net.mindengine.oculus.grid.agent.taskrunner.TaskRunner;
 import net.mindengine.oculus.grid.domain.agent.AgentId;
 import net.mindengine.oculus.grid.domain.agent.AgentInformation;
 import net.mindengine.oculus.grid.domain.agent.AgentStatus;
+import net.mindengine.oculus.grid.domain.agent.AgentTag;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
 import net.mindengine.oculus.grid.domain.task.Task;
 import net.mindengine.oculus.grid.domain.task.TaskStatus;
@@ -47,6 +50,7 @@ import net.mindengine.oculus.grid.storage.Storage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.xml.sax.SAXException;
 
 /**
  * Test Run Manager Agent.<br>
@@ -387,7 +391,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
         agentInformation.setPort(Integer.parseInt(properties.getProperty(AgentProperties.AGENT_PORT)));
         agentInformation.setName(properties.getProperty(AgentProperties.AGENT_NAME));
         agentInformation.setRemoteName(properties.getProperty(AgentProperties.AGENT_REMOTE_NAME));
-        agentInformation.setTags(loadAgentTags(properties));
+        agentInformation.setTags(loadAgentTags());
         agentInformation.setDescription(properties.getProperty(AgentProperties.AGENT_DESCRIPTION));
         agent.setAgentInformation(agentInformation);
         
@@ -401,18 +405,9 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
         agent.startAgent();
     }
     
-    private static String[] loadAgentTags(Properties properties) {
-        String rowTags = properties.getProperty(AgentProperties.AGENT_TAGS);
-        if(rowTags!=null) {
-            String[] tags = rowTags.split(",");
-            for(int i=0; i<tags.length; i++) {
-                tags[i] = tags[i].trim();
-            }
-            return tags;
-        }
-        else {
-            return new String[]{};
-        }
+    private static AgentTag[] loadAgentTags() throws ParserConfigurationException, SAXException, IOException {
+        File tagsFile = new File("grid.agent.tags.xml");
+        return GridUtils.loadTags(tagsFile);
     }
 
     public void setAgentInformation(AgentInformation agentInformation) {

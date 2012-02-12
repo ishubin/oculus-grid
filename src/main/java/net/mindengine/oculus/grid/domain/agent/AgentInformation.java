@@ -39,7 +39,7 @@ public class AgentInformation implements Serializable {
 	private String remoteName;
 	private String description;
 	private Integer port;
-	private String[] tags;
+	private AgentTag[] tags;
 
 	public String getDescription() {
 		return description;
@@ -94,11 +94,12 @@ public class AgentInformation implements Serializable {
         return agentId;
     }
 
-    public String[] getTags() {
+    public AgentTag[] getTags() {
         return tags;
     }
 
-    public void setTags(String[] tags) {
+    public void setTags(AgentTag[] tags) {
         this.tags = tags;
     }
+
 }
