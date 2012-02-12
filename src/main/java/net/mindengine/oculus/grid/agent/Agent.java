@@ -108,6 +108,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	    if(host==null || host.trim().isEmpty()) {
 	        InetAddress addr = InetAddress.getLocalHost();
 	        host = addr.getHostName();
+	        agentInformation.setHost(host);
 	    }
 
 		logger.info("Starting agent: " + getAgentInformation());
