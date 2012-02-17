@@ -167,6 +167,27 @@ public class AgentContainer {
 	public boolean hasFreeAgents() {
 		return !freeAgents.isEmpty();
 	}
+	
+	public boolean containsAgentWithName(String name) {
+        agentLock.lock();
+        
+        boolean containsAgent = false;
+        try {
+           for(AgentWrapper agent : freeAgents.values()) {
+               if(agent.getAgentInformation().getName().equals(name)) {
+                   containsAgent = true;
+                   break;
+               }
+           }
+        }
+        catch (Throwable e) {
+            logger.error(e);
+        }
+        finally {
+            agentLock.unlock();
+        }
+        return containsAgent;
+    }
 
 	/**
 	 * Fetches free agent which is in the list of preferred agents
@@ -229,4 +250,5 @@ public class AgentContainer {
 		}
 		agentLock.unlock();
 	}
+
 }

@@ -41,6 +41,7 @@ import net.mindengine.oculus.grid.domain.task.TaskUser;
 import net.mindengine.oculus.grid.service.AgentServerRemoteInterface;
 import net.mindengine.oculus.grid.service.ClientServerRemoteInterface;
 import net.mindengine.oculus.grid.service.ServerAgentRemoteInterface;
+import net.mindengine.oculus.grid.service.exceptions.AgentConnectionException;
 import net.mindengine.oculus.grid.service.exceptions.IncorrectTaskException;
 import net.mindengine.oculus.grid.storage.DefaultGridStorage;
 import net.mindengine.oculus.grid.storage.Storage;
@@ -300,12 +301,24 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
     public AgentId registerAgent(AgentInformation agentInformation, AgentId previousAgentId) throws Exception {
         /*
          * In case if agents needs to be reconnected it will send its
-         * previous id and token and TRMServer will remove that instance of
+         * previous id and token and Grid server will remove that instance of
          * agent and will create a new one.
          */
         if (previousAgentId != null) {
             agentContainer.removeAgent(previousAgentId);
         }
+        
+        if(agentInformation.getName() == null || agentInformation.getName().trim().isEmpty()) {
+            throw new AgentConnectionException("Agent with empty name is not allowed in Grid");
+        }
+        
+        /*
+         * Checking that the agent name is unique.
+         */
+        if(agentContainer.containsAgentWithName(agentInformation.getName())){
+            throw new AgentConnectionException("Agent with such name ('" + agentInformation.getName() + "') is already registered in Grid");
+        }
+        
 
         Lookup lookup = GridUtils.createDefaultLookup();
 

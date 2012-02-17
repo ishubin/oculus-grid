@@ -21,16 +21,19 @@ package net.mindengine.oculus.grid.test.suites;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.Properties;
 
 import net.mindengine.oculus.grid.GridProperties;
-import net.mindengine.oculus.grid.GridUtils;
 import net.mindengine.oculus.grid.agent.Agent;
 import net.mindengine.oculus.grid.domain.agent.AgentInformation;
 import net.mindengine.oculus.grid.server.Server;
+import net.mindengine.oculus.grid.service.exceptions.AgentConnectionException;
 import net.mindengine.oculus.grid.storage.DefaultAgentStorage;
 import net.mindengine.oculus.grid.storage.DefaultGridStorage;
 
@@ -51,6 +54,94 @@ public class ConnectionTest {
         }
     }
     
+    @Test
+    public void agentWithAlreadyUsedNameShouldNotBeAbleToRegister() throws Exception {
+        final ErrorContainer errorContainer = new ErrorContainer();
+        final Server server = new Server();
+        server.setStorage(new DefaultGridStorage());
+        Thread serverThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    server.startServer(8090, "server");
+                } catch (Exception e) {
+                    errorContainer.setException(e);
+                }
+            }
+        });
+        serverThread.start();
+        Thread.sleep(2000);
+        if(errorContainer.getException()!=null) {
+            throw errorContainer.getException();
+        }
+        
+        final Agent agent1 = createSampleAgent();
+        Thread agentThread1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    agent1.startAgent();
+                } catch (Exception e) {
+                    errorContainer.setException(e);
+                }
+            }
+        });
+        agentThread1.start();
+        
+        Thread.sleep(3000);
+        if(errorContainer.getException()!=null) {
+            throw errorContainer.getException();
+        }
+        
+        final Agent agent2 = createSampleAgent();
+        agent2.getAgentInformation().setPort(8093);
+        Thread agentThread2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    agent2.startAgent();
+                } catch (Exception e) {
+                    errorContainer.setException(e);
+                }
+            }
+        });
+        agentThread2.start();
+        
+        Thread.sleep(3000);
+        assertNotNull(errorContainer.getException());
+        assertEquals(AgentConnectionException.class, errorContainer.getException().getClass());
+        AgentConnectionException ace = (AgentConnectionException) errorContainer.getException();
+        assertEquals("Agent with such name ('Agent') is already registered in Grid", ace.getMessage());
+        
+        assertEquals((long)agent1.getAgentId().getId(), 1L);
+        assertNotNull(agent1.getAgentId().getToken());
+        assertNotSame(agent1.getAgentId().getToken(), "");
+        
+        assertNull(agent2.getAgentId());
+    }        
+    
+    private Agent createSampleAgent() throws FileNotFoundException, IOException {
+        Agent agent = new Agent();
+        Properties properties = new Properties();
+        properties.load(new FileReader(new File("grid.agent.properties")));
+        
+        AgentInformation agentInformation = new AgentInformation();
+        agentInformation.setHost("localhost");
+        agentInformation.setName("Agent");
+        agentInformation.setPort(8091);
+        agentInformation.setRemoteName("agent");
+        agent.setAgentInformation(agentInformation);
+        
+        agent.setServerHost("localhost");
+        agent.setServerName("server");
+        agent.setServerPort(8090);
+        agent.setAgentReconnectionTimeout(1);
+        DefaultAgentStorage storage = new DefaultAgentStorage();
+        storage.setStoragePath(properties.getProperty(GridProperties.STORAGE_PATH));
+        agent.setStorage(storage);
+        return agent;
+    }
+
     @SuppressWarnings("deprecation")
     @Test
     public void agentCanReconnectToServer() throws Exception {
@@ -75,7 +166,7 @@ public class ConnectionTest {
         
         final Agent agent = new Agent();
         Properties properties = new Properties();
-        properties.load(new FileReader(new File(GridUtils.getMandatoryResourceFile(Agent.class, "/grid.agent.properties"))));
+        properties.load(new FileReader(new File("grid.agent.properties")));
         
         AgentInformation agentInformation = new AgentInformation();
         agentInformation.setHost("localhost");
