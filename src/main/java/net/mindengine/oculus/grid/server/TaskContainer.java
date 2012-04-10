@@ -219,6 +219,11 @@ public class TaskContainer {
 		else if (task.getState().equals(TaskWrapper.COMPLETED)) {
 			completedTasks.remove(task.getId());
 		}
+		else if (task.getState().equals(TaskWrapper.QUEUED)) {
+		    if ( queuedTasks.contains(task)) {
+		        queuedTasks.remove(task);
+		    }
+		}
 	}
 
 	private Long uniqueTaskId = 0L;

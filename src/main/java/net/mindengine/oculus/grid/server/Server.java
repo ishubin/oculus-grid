@@ -71,7 +71,7 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
 
     /**
      * The amount of time in minutes in which the completed tasks will be
-     * removed from TRMServer. Configured in server.properties file
+     * removed from Grid. Configured in server.properties file
      */
     private Long storeCompletedTasksTime = 300000L;
 

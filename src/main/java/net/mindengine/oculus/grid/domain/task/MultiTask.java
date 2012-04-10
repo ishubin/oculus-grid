@@ -68,12 +68,13 @@ public class MultiTask extends Task {
         for (Task task : tasks) {
             TaskStatus taskStatus = task.updateTaskStatus();
             percent += taskStatus.getPercent();
-
-            if (TaskStatus.WAITING.equals(task.getTaskStatus().getStatus())) {
+            int childStatus = task.getTaskStatus().getStatus();
+            
+            if (TaskStatus.WAITING.equals(childStatus)) {
                 hasWaiting = true;
-            } else if (TaskStatus.ACTIVE.equals(task.getTaskStatus().getStatus())) {
+            } else if (TaskStatus.ACTIVE.equals(childStatus)) {
                 hasActive = true;
-            } else if (TaskStatus.COMPLETED.equals(task.getTaskStatus().getStatus())) {
+            } else if (TaskStatus.COMPLETED.equals(childStatus) || TaskStatus.ERROR.equals(childStatus)) {
                 hasCompleted = true;
             }
         }
