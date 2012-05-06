@@ -69,7 +69,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	private AgentServerRemoteInterface server;
 	
 	private AgentConnectionChecker agentConnectionChecker = new AgentConnectionChecker();
-	private Task task;
+	private Task task = null;
 	private TaskStatus taskStatus;
 	private AgentId agentId = null;
 	
@@ -85,7 +85,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
     private Storage storage;
     private Registry registry = GridUtils.createDefaultRegistry();
     
-    //Flag that specifies should agent stop running or not
+    // Flag that specifies should agent stop running or not
     private volatile boolean shouldRun = true;
     
 	/**
@@ -113,7 +113,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 
 		logger.info("Starting agent: " + getAgentInformation());
 
-		//Sending also the previous agentId in case if there was a reconnection
+		// Sending also the previous agentId in case if there was a reconnection
 		AgentId newAgentId = server.registerAgent(getAgentInformation(), getAgentId());
 		this.setAgentId(newAgentId);
 		logger.info("Registered on server with id = " + getAgentId().getId()+" and token = "+getAgentId().getToken());
@@ -162,7 +162,9 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 
 	@Override
 	public void runSuiteTask(SuiteTask task) throws Exception {
-	    
+	    if ( this.task != null ) {
+	        throw new IllegalStateException("Cannot run new task. Agent is busy already");
+	    }
 	    Boolean isSynced = synchronizeProjectForTask(task);
 	    shouldCurrentTaskProceed = true;
 	    
@@ -191,10 +193,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	    return shouldCurrentTaskProceed;
 	}
 
-	public void setServer(AgentServerRemoteInterface server) {
-		this.server = server;
-	}
-
+	
 	public AgentServerRemoteInterface getServer() {
 		return server;
 	}
@@ -242,6 +241,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	public void onTaskFinished(Long suiteId) {
 		logger.info("Task is finished");
 		taskStatus.setStatus(TaskStatus.COMPLETED);
+		taskStatus.getSuiteInformation().setSuiteId(suiteId);
 		try {
 			server.updateTaskStatus(task.getId(), taskStatus);
 		}

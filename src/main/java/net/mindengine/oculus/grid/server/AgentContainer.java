@@ -196,7 +196,7 @@ public class AgentContainer {
 	 *            Array of preferred agents names
 	 * @return Free agent
 	 */
-	public AgentWrapper fetchAgentWrapper(String[] preferredAgentsNames) {
+	public AgentWrapper fetchFreeAgentWrapperMatchingNames(String[] preferredAgentsNames) {
 		Iterator<AgentWrapper> iterator = freeAgents.values().iterator();
 		if (preferredAgentsNames == null) {
 			if (iterator.hasNext()) {

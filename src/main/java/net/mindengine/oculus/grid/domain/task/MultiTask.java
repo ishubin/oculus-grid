@@ -85,10 +85,12 @@ public class MultiTask extends Task {
 
         if (hasCompleted && !hasActive && !hasWaiting) {
             getTaskStatus().setStatus(TaskStatus.COMPLETED);
+            getTaskStatus().setPercent(100.0f);
         } else if (hasActive) {
             getTaskStatus().setStatus(TaskStatus.ACTIVE);
-        } else
+        } else {
             getTaskStatus().setStatus(TaskStatus.WAITING);
+        }
 
         return getTaskStatus();
     }

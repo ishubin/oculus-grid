@@ -236,10 +236,7 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
                 if (taskWrapper.getParent() == null) {
                     TaskUser taskUser = taskWrapper.getTask().getTaskUser();
                     if (taskUser!=null && userId.equals(taskUser.getId())) {
-                        if (taskWrapper.getTask() instanceof MultiTask) {
-                            MultiTask multiTask = (MultiTask) taskWrapper.getTask();
-                            multiTask.updateTaskStatus();
-                        }
+                        taskWrapper.getTask().updateTaskStatus();
                         tasksList.add(taskWrapper.getTaskInformation());
                     }
                 }

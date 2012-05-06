@@ -95,6 +95,7 @@ public class TaskWrapper {
 	}
 	
 	public TaskInformation getTaskInformation() {
+	    getTask().updateTaskStatus();
 	    TaskInformation info = new TaskInformation();
 	    info.setTaskName(getTask().getName());
 	    info.setTaskId(getTask().getId());

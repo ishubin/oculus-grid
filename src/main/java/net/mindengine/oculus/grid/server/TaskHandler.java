@@ -61,11 +61,11 @@ public class TaskHandler extends Thread {
 						         * Checking that project with specified name and version is in storage already.
 						         * If not the task will be rejected with NO_PROJECT_IN_STORAGE status
 						         */
-						        SuiteTask suiteTask = (SuiteTask)task.getTask();
+						        SuiteTask suiteTask = (SuiteTask) task.getTask();
 						        String storageKey = server.getStorage().readProjectControlKey(suiteTask.getProjectName(), suiteTask.getProjectVersion());
 						        
 						        if(storageKey!=null) {
-						            AgentWrapper agent = agentContainer.fetchAgentWrapper(task.getTask().getAgentNames());
+						            AgentWrapper agent = agentContainer.fetchFreeAgentWrapperMatchingNames(task.getTask().getAgentNames());
 						            if (agent != null) {
 						                try {
 						                    /*
@@ -74,10 +74,7 @@ public class TaskHandler extends Thread {
 						                    assignTaskToAgent(task, agent);
 						                }
 						                catch (Exception ex) {
-						                    agentContainer.getFreeAgents().remove(agent.getAgentId());
-						                    agentContainer.getAgents().remove(agent.getAgentId());
 						                    ex.printStackTrace();
-						                    
 						                    taskContainer.moveTaskToErrorTask(task, ex.getClass().getName()+": " + ex.getMessage());
 						                }
 						            }
@@ -105,18 +102,19 @@ public class TaskHandler extends Thread {
 	private void assignTaskToAgent(TaskWrapper task, AgentWrapper agentWrapper) throws Exception {
 	    if(task.getTask() instanceof SuiteTask) {
 	        
-    		agentWrapper.getAgentRemoteInterface().runSuiteTask((SuiteTask)task.getTask());
     		agentWrapper.setStatus(AgentWrapper.BUSY);
     		agentWrapper.setAssignedTask(task);
     		taskContainer.getQueuedTasks().remove(task);
     		taskContainer.getAssignedTasks().put(task.getId(), task);
-    		agentContainer.getFreeAgents().remove(agentWrapper.getAgentId());
+    		agentContainer.getFreeAgents().remove(agentWrapper.getAgentId().getId());
     		task.setState(TaskWrapper.ASSIGNED);
     		task.setAssignedAgent(agentWrapper);
     
     		task.getTask().setStartedDate(new Date());
     		task.getTask().getTaskStatus().setStatus(TaskStatus.ACTIVE);
     		task.getTask().getTaskStatus().setAssignedAgent(agentWrapper.getAgentInformation());
+    		
+    		agentWrapper.getAgentRemoteInterface().runSuiteTask((SuiteTask)task.getTask());
     		server.updateTaskStatus(task.getId(), task.getTask().getTaskStatus());
 	    }
 	}

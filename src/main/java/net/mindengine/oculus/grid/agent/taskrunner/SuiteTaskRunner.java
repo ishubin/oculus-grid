@@ -42,9 +42,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class SuiteTaskRunner extends TaskRunner {
 	private Log logger = LogFactory.getLog(getClass());
-
-	public void downloadProjectFromServer(String projectName, String version) {
-	}
 	
 	@Override
 	public void run() {
@@ -140,9 +137,14 @@ public class SuiteTaskRunner extends TaskRunner {
 			ByteArrayOutputStream stdout = new ByteArrayOutputStream();
             PumpStreamHandler psh = new PumpStreamHandler(stdout);
             executor.setStreamHandler(psh);
-			executor.execute(cmdLine);
-			
-			System.out.println(stdout.toString());
+            
+            try {
+                executor.execute(cmdLine);
+            }
+			catch (Exception e) {
+			    System.out.println(stdout.toString());
+                throw e;
+            }
 			
 			/*
 			 * Removing the temporary suite file
