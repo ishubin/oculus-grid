@@ -19,14 +19,11 @@
 package net.mindengine.oculus.grid.server;
 
 import java.io.File;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Properties;
 
 import net.mindengine.jeremy.registry.Lookup;
 import net.mindengine.jeremy.registry.Registry;
-import net.mindengine.oculus.grid.GridProperties;
 import net.mindengine.oculus.grid.GridUtils;
 import net.mindengine.oculus.grid.console.ConsoleCommandScanner;
 import net.mindengine.oculus.grid.domain.agent.AgentId;
@@ -43,7 +40,6 @@ import net.mindengine.oculus.grid.service.ClientServerRemoteInterface;
 import net.mindengine.oculus.grid.service.ServerAgentRemoteInterface;
 import net.mindengine.oculus.grid.service.exceptions.AgentConnectionException;
 import net.mindengine.oculus.grid.service.exceptions.IncorrectTaskException;
-import net.mindengine.oculus.grid.storage.DefaultGridStorage;
 import net.mindengine.oculus.grid.storage.Storage;
 
 import org.apache.commons.io.FileUtils;
@@ -423,30 +419,7 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
         return storage.downloadProjectFromStorage(projectName, projectVersion);
     }
     
-    public static void main(String[] args) throws Exception {
-        Server server = new Server();
-        
-        Properties properties = new Properties();
-        properties.load(new FileReader(new File("grid.server.properties")));
-        Integer port = Integer.parseInt(properties.getProperty(ServerProperties.SERVER_PORT));
-        String strStoreCompletedTasksTime = properties.getProperty(ServerProperties.SERVER_STORE_COMPLETED_TASKS_TIME);
-        if (strStoreCompletedTasksTime == null || strStoreCompletedTasksTime.isEmpty()) {
-            server.setStoreCompletedTasksTime(null);
-        } else {
-            server.setStoreCompletedTasksTime(Long.parseLong(strStoreCompletedTasksTime));
-        }
-        String serverName = properties.getProperty(ServerProperties.SERVER_NAME);
-        
-        //Setting a storage to handle project synchronization
-        DefaultGridStorage storage = new DefaultGridStorage();
-        storage.setStoragePath(properties.getProperty(GridProperties.STORAGE_PATH));
-        server.setStorage(storage);
-        
-        server.startServer(port, serverName);
-    }
-
     public void quit() {
-
         agentHandler.setEnabled(false);
         System.exit(0);
     }

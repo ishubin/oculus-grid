@@ -20,24 +20,19 @@ package net.mindengine.oculus.grid.agent;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import net.mindengine.jeremy.registry.Lookup;
 import net.mindengine.jeremy.registry.Registry;
 import net.mindengine.jeremy.starter.RegistryStarter;
-import net.mindengine.oculus.grid.GridProperties;
 import net.mindengine.oculus.grid.GridUtils;
 import net.mindengine.oculus.grid.agent.taskrunner.TaskRunner;
 import net.mindengine.oculus.grid.domain.agent.AgentId;
 import net.mindengine.oculus.grid.domain.agent.AgentInformation;
 import net.mindengine.oculus.grid.domain.agent.AgentStatus;
-import net.mindengine.oculus.grid.domain.agent.AgentTag;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
 import net.mindengine.oculus.grid.domain.task.Task;
 import net.mindengine.oculus.grid.domain.task.TaskStatus;
@@ -45,12 +40,10 @@ import net.mindengine.oculus.grid.domain.task.TestStatus;
 import net.mindengine.oculus.grid.service.AgentServerRemoteInterface;
 import net.mindengine.oculus.grid.service.ServerAgentRemoteInterface;
 import net.mindengine.oculus.grid.service.exceptions.IncorrectTaskException;
-import net.mindengine.oculus.grid.storage.DefaultAgentStorage;
 import net.mindengine.oculus.grid.storage.Storage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.xml.sax.SAXException;
 
 /**
  * Test Run Manager Agent.<br>
@@ -376,39 +369,6 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 
     public void setServerPort(Integer serverPort) {
         this.serverPort = serverPort;
-    }
-
-    public static void main(String[] args) throws Exception {
-        Agent agent = new Agent();
-        Properties properties = new Properties();
-        properties.load(new FileReader(new File("grid.agent.properties")));
-        agent.setServerHost(properties.getProperty(AgentProperties.SERVER_HOST));
-        agent.setServerPort(Integer.parseInt(properties.getProperty(AgentProperties.SERVER_PORT)));
-        agent.setServerName(properties.getProperty(AgentProperties.SERVER_NAME));
-        
-        
-        AgentInformation agentInformation = new AgentInformation();
-        agentInformation.setHost(properties.getProperty(AgentProperties.AGENT_HOST));
-        agentInformation.setPort(Integer.parseInt(properties.getProperty(AgentProperties.AGENT_PORT)));
-        agentInformation.setName(properties.getProperty(AgentProperties.AGENT_NAME));
-        agentInformation.setRemoteName(properties.getProperty(AgentProperties.AGENT_REMOTE_NAME));
-        agentInformation.setTags(loadAgentTags());
-        agentInformation.setDescription(properties.getProperty(AgentProperties.AGENT_DESCRIPTION));
-        agent.setAgentInformation(agentInformation);
-        
-        agent.setAgentReconnectionTimeout(Integer.parseInt(properties.getProperty(AgentProperties.AGENT_RECONNECT_TIMEOUT)));
-        agent.setAgentOculusGridLibrary(properties.getProperty(GridProperties.GRID_LIBRARY));
-        agent.setAgentOculusRunner(properties.getProperty(AgentProperties.AGENT_OCULUS_RUNNER));
-        
-        DefaultAgentStorage storage = new DefaultAgentStorage();
-        storage.setStoragePath(properties.getProperty(GridProperties.STORAGE_PATH));
-        agent.storage = storage;
-        agent.startAgent();
-    }
-    
-    private static AgentTag[] loadAgentTags() throws ParserConfigurationException, SAXException, IOException {
-        File tagsFile = new File("grid.agent.tags.xml");
-        return GridUtils.loadTags(tagsFile);
     }
 
     public void setAgentInformation(AgentInformation agentInformation) {
