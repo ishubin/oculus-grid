@@ -11,6 +11,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
+import net.mindengine.oculus.experior.utils.PropertyUtils;
 import net.mindengine.oculus.grid.agent.Agent;
 import net.mindengine.oculus.grid.agent.AgentProperties;
 import net.mindengine.oculus.grid.domain.agent.AgentInformation;
@@ -82,7 +83,7 @@ public class Main {
         catch (Exception e) {
             e.printStackTrace();
         }
-        overrideWithSystemProperties(properties);
+        PropertyUtils.overridePropertiesWithSystemProperties(properties);
         
         Integer port = Integer.parseInt(properties.getProperty(ServerProperties.SERVER_PORT, "8081"));
         String strStoreCompletedTasksTime = properties.getProperty(ServerProperties.SERVER_STORE_COMPLETED_TASKS_TIME);
@@ -101,18 +102,6 @@ public class Main {
         server.startServer(port, serverName);
     }
     
-    private static void overrideWithSystemProperties(Properties properties) {
-        Properties systemProperties = System.getProperties();
-        for ( Map.Entry<Object, Object> entry : systemProperties.entrySet() ) {
-            String value;
-            if ( entry.getValue() != null ) {
-                value = entry.getValue().toString();
-            }
-            else value = "";
-            properties.setProperty(entry.getKey().toString(), value);
-        }
-    }
-
     private static void printHelp() {
         System.out.println("Usage: java -jar oculus-grid.jar [ server | agent ]");
     }
