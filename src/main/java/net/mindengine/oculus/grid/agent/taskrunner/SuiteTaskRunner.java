@@ -21,10 +21,16 @@ package net.mindengine.oculus.grid.agent.taskrunner;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import net.mindengine.oculus.experior.suite.XmlSuiteParser;
+import net.mindengine.oculus.grid.agent.AgentProjectContext;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
 
 import org.apache.commons.exec.CommandLine;
@@ -33,6 +39,12 @@ import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import freemarker.cache.StringTemplateLoader;
+import freemarker.template.Configuration;
+import freemarker.template.DefaultObjectWrapper;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 
 /**
  * Used for running the tests with <b>Oculus Test Run Framework</b>
@@ -56,13 +68,7 @@ public class SuiteTaskRunner extends TaskRunner {
 			    throw new NullPointerException("Agent storage is not specified");
 			}
 			
-			if(getProjectSyncNeeded()) {
-			    File projectFile = getAgent().getServer().downloadProject(task.getProjectName(), task.getProjectVersion());
-			    String controlCode = getAgent().getServer().getProjectControlCode(task.getProjectName(), task.getProjectVersion());
-			    
-			    byte[] bytes = FileUtils.readFileToByteArray(projectFile);
-			    getAgent().getStorage().putProjectZip(task.getProjectName(), task.getProjectVersion(), bytes, "agent", controlCode);
-			}
+			syncProject(task);
 			
 			String currentProjectDir = getAgent().getStorage().getProjectPath(task.getProjectName(), task.getProjectVersion());
 			String pathToOculusGrid = getAgent().getAgentOculusGridLibrary();
@@ -71,21 +77,17 @@ public class SuiteTaskRunner extends TaskRunner {
 			    throw new FileNotFoundException(pathToOculusGrid);
 			}
 			
-			String oculusRunnerClasspath = getAgent().getAgentOculusRunner();
-			if(pathToOculusGrid==null) {
-                throw new IllegalArgumentException("Path to oculus grid library is not specified");
-            }
 			
 			/*
 			 * Determine separator for java classpath
 			 */
-			String jSeparator = ":";
-
+	        AgentProjectContext ctx = new AgentProjectContext();
+			ctx.setJlibSeparator(":");
 			String osName = System.getProperty("os.name");
 			if (osName != null) {
 				logger.info("OS: " + osName);
 				if (osName.toLowerCase().startsWith("windows")) {
-					jSeparator = ";";
+					ctx.setJlibSeparator(";");
 				}
 			}
 
@@ -96,7 +98,7 @@ public class SuiteTaskRunner extends TaskRunner {
 			 * generate suite file name with current date and a random number
 			 */
 			String suiteFileName = "suite" + new Date().getTime() + (new Random().nextInt(6)) + ".xml";
-
+			
 			File file = new File(currentProjectDir + File.separator + suiteFileName);
 
 			/*
@@ -112,20 +114,9 @@ public class SuiteTaskRunner extends TaskRunner {
 			
 			logger.info("Saving suite to " + file.getAbsolutePath());
 			XmlSuiteParser.saveSuite(task.getSuite(), file);
-			
-			/*
-			 * Actually here the process command should wrap the classpath in quotes but for some reason java throws error "unable to find jarfile"
-			 * 
-			 */
-			String processCommand = "java -classpath \"" + pathToOculusGrid + jSeparator 
-			    + currentProjectDir + File.separator + "libs" + File.separator + "*" + jSeparator
-			    + currentProjectDir + File.separator + "lib" + File.separator + "*" + jSeparator
-			    + currentProjectDir + File.separator + "*\"" 
-			    + " " + oculusRunnerClasspath 
-			    + " localhost " 
-			    + getAgent().getAgentInformation().getPort() + " " 
-			    + getAgent().getAgentInformation().getRemoteName() + " " 
-			    + suiteFileName;
+			ctx.setSuiteFile(file.getAbsolutePath());
+			ctx.setProjectDir(currentProjectDir);
+			String processCommand = buildProcessCommand(ctx);
 
 			logger.info("Working directory is: " + currentProjectDir);
 			logger.info("Executing the process: \n" + processCommand);
@@ -156,4 +147,28 @@ public class SuiteTaskRunner extends TaskRunner {
 			getAgent().onTaskError(error);
 		}
 	}
+
+    private String buildProcessCommand(AgentProjectContext ctx) throws IOException, TemplateException {
+        Configuration cfg = new Configuration();
+        cfg.setObjectWrapper(new DefaultObjectWrapper());
+        cfg.setTemplateLoader(new StringTemplateLoader());
+        cfg.setNumberFormat("0.######");
+        Template template = new Template("agentProcess", new StringReader(getAgent().getAgentOculusRunnerProcessTemplate()), cfg);
+        StringWriter sw = new StringWriter();
+        Map<String, Object> model = new HashMap<String, Object>();
+        model.put("agent", getAgent());
+        model.put("ctx", ctx);
+        template.process(model, sw);
+        return sw.toString();
+    }
+
+    private void syncProject(SuiteTask task) throws Exception, IOException {
+        if(getProjectSyncNeeded()) {
+            File projectFile = getAgent().getServer().downloadProject(task.getProjectName(), task.getProjectVersion());
+            String controlCode = getAgent().getServer().getProjectControlCode(task.getProjectName(), task.getProjectVersion());
+            
+            byte[] bytes = FileUtils.readFileToByteArray(projectFile);
+            getAgent().getStorage().putProjectZip(task.getProjectName(), task.getProjectVersion(), bytes, "agent", controlCode);
+        }
+    }
 }

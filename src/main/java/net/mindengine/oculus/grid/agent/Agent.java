@@ -73,7 +73,7 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
 	private Integer agentReconnectionTimeout = 5;
     
     private String agentOculusGridLibrary;
-    private String agentOculusRunner;
+    private String agentOculusRunnerProcessTemplate;
     
     private Storage storage;
     private Registry registry = GridUtils.createDefaultRegistry();
@@ -403,20 +403,20 @@ public class Agent implements ServerAgentRemoteInterface, AgentTestRunnerListene
         this.storage = storage;
     }
 
-    public String getAgentOculusRunner() {
-        return agentOculusRunner;
-    }
-
-    public void setAgentOculusRunner(String agentOculusRunner) {
-        this.agentOculusRunner = agentOculusRunner;
-    }
-
     public String getAgentOculusGridLibrary() {
         return agentOculusGridLibrary;
     }
 
     public void setAgentOculusGridLibrary(String agentOculusGridLibrary) {
         this.agentOculusGridLibrary = agentOculusGridLibrary;
+    }
+
+    public String getAgentOculusRunnerProcessTemplate() {
+        return agentOculusRunnerProcessTemplate;
+    }
+
+    public void setAgentOculusRunnerProcessTemplate(String agentOculusRunnerProcessTemplate) {
+        this.agentOculusRunnerProcessTemplate = agentOculusRunnerProcessTemplate;
     }
 
 }

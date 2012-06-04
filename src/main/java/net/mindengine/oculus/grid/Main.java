@@ -1,15 +1,11 @@
 package net.mindengine.oculus.grid;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
-
-import org.xml.sax.SAXException;
 
 import net.mindengine.oculus.experior.utils.PropertyUtils;
 import net.mindengine.oculus.grid.agent.Agent;
@@ -21,9 +17,13 @@ import net.mindengine.oculus.grid.server.ServerProperties;
 import net.mindengine.oculus.grid.storage.DefaultAgentStorage;
 import net.mindengine.oculus.grid.storage.DefaultGridStorage;
 
+import org.xml.sax.SAXException;
+
 public class Main {
 
     public static void main(String[] args) throws Exception {
+        runAgent();
+        /*
         if ( args == null || args.length == 0 ) {
             printHelp();
         }
@@ -32,7 +32,7 @@ public class Main {
         }
         else if (args[0].equals("agent")) {
             runAgent();
-        }
+        }*/
     }
     
     private static AgentTag[] loadAgentTags() throws ParserConfigurationException, SAXException, IOException {
@@ -64,7 +64,7 @@ public class Main {
         
         agent.setAgentReconnectionTimeout(Integer.parseInt(properties.getProperty(AgentProperties.AGENT_RECONNECT_TIMEOUT, "5")));
         agent.setAgentOculusGridLibrary(properties.getProperty(GridProperties.GRID_LIBRARY));
-        agent.setAgentOculusRunner(properties.getProperty(AgentProperties.AGENT_OCULUS_RUNNER));
+        agent.setAgentOculusRunnerProcessTemplate(properties.getProperty(AgentProperties.AGENT_OCULUS_RUNNER_PROCESS_TEMPLATE));
         
         DefaultAgentStorage storage = new DefaultAgentStorage();
         storage.setStoragePath(properties.getProperty(GridProperties.STORAGE_PATH));

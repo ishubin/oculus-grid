@@ -40,7 +40,6 @@ import net.mindengine.oculus.grid.domain.task.SuiteStatistic;
 import net.mindengine.oculus.grid.domain.task.SuiteTask;
 import net.mindengine.oculus.grid.domain.task.TaskInformation;
 import net.mindengine.oculus.grid.domain.task.TaskStatus;
-import net.mindengine.oculus.grid.runner.DefaultOculusRunner;
 import net.mindengine.oculus.grid.server.Server;
 import net.mindengine.oculus.grid.service.AgentServerRemoteInterface;
 import net.mindengine.oculus.grid.storage.DefaultAgentStorage;
@@ -85,7 +84,7 @@ public class TaskAgentExecutionTest {
                 storage.setStoragePath(OCULUS_TEST_HOME+"/data/storage-agent-1");
                 agent.setAgentReconnectionTimeout(10);
                 agent.setAgentOculusGridLibrary(OCULUS_TEST_HOME+"/data/grid-library/oculus-grid.jar");
-                agent.setAgentOculusRunner(DefaultOculusRunner.class.getName());
+                agent.setAgentOculusRunnerProcessTemplate("java -classpath \"${agent.agentOculusGridLibrary}${ctx.jlibSeparator}${ctx.projectDir}/libs/*${ctx.jlibSeparator}${ctx.projectDir}/lib/*${ctx.jlibSeparator}${ctx.projectDir}/*\" net.mindengine.oculus.grid.runner.DefaultOculusRunner localhost ${agent.agentInformation.port} ${agent.agentInformation.remoteName} ${ctx.suiteFile}");
                 agent.setStorage(storage);
                 agent.setServerHost("localhost");
                 agent.setServerPort(8200);

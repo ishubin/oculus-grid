@@ -31,7 +31,7 @@ public class AgentProperties {
     public static final String AGENT_TAGS = "agent.tags".intern();
     public static final String AGENT_REMOTE_NAME = "agent.remoteName".intern();
     
-    public static final String AGENT_OCULUS_RUNNER = "agent.oculus.runner".intern();
+    public static final String AGENT_OCULUS_RUNNER_PROCESS_TEMPLATE = "agent.oculus.runner.process".intern();
     
     public static final String AGENT_RECONNECT_TIMEOUT = "agent.reconnect.timeout";
 }
