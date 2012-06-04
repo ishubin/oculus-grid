@@ -1,1 +1,1 @@
-java -jar oculus-grid.jar net.mindengine.oculus.grid.Main agent $* 
+java -jar oculus-grid.jar agent $* 
