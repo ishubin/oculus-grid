@@ -22,8 +22,6 @@ import org.xml.sax.SAXException;
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        runAgent();
-        /*
         if ( args == null || args.length == 0 ) {
             printHelp();
         }
@@ -32,7 +30,7 @@ public class Main {
         }
         else if (args[0].equals("agent")) {
             runAgent();
-        }*/
+        }
     }
     
     private static AgentTag[] loadAgentTags() throws ParserConfigurationException, SAXException, IOException {
