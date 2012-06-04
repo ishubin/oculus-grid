@@ -1,14 +1,14 @@
 set -e
 
 cd ..
-mkdir -p bin
+mkdir -p bin/storage
 mkdir -p target
 rm -rf bin/*
 rm -rf target/*
 mvn assembly:assembly -DskipTests=true
 cp target/oculus-grid-jar-with-dependencies.jar bin/oculus-grid.jar
 cp grid.agent.tags.xml bin/.
-cp *.properties bin/.
+cp scripts/*.properties bin/.
 cp scripts/run-server.sh bin/.
 cp scripts/run-agent.sh bin/.
 
