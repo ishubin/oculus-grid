@@ -104,6 +104,9 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
     @Override
     public TaskStatus getTaskStatus(Long taskId) throws Exception {
         TaskWrapper taskWrapper = taskContainer.getTask(taskId);
+        if ( taskWrapper == null ) {
+            throw new IllegalArgumentException("Task with id " + taskId + " does not exist");
+        }
 
         if (taskWrapper.getTask() instanceof MultiTask) {
             taskWrapper.taskLock.lock();
@@ -158,6 +161,9 @@ public class Server implements ClientServerRemoteInterface, AgentServerRemoteInt
      * @throws Exception
      */
     private void stopTask(TaskWrapper task) throws Exception {
+        if ( task == null ) { 
+            throw new IllegalArgumentException("Task does not exist");
+        }
         task.getTask().getTaskStatus().setInterrupted(true);
         if (task != null) {
             logger.info("Stoping task " + task.getId());
