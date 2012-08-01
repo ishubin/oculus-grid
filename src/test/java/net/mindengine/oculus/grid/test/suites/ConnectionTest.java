@@ -63,7 +63,7 @@ public class ConnectionTest {
             @Override
             public void run() {
                 try {
-                    server.startServer(8090, "server");
+                    server.startServer(9010, "server");
                 } catch (Exception e) {
                     errorContainer.setException(e);
                 }
@@ -118,6 +118,10 @@ public class ConnectionTest {
         assertNotSame(agent1.getAgentId().getToken(), "");
         
         assertNull(agent2.getAgentId());
+        
+        agent2.stopAgent();
+        agent1.stopAgent();
+        server.stopServer();
     }        
     
     private Agent createSampleAgent() throws FileNotFoundException, IOException {
@@ -134,7 +138,7 @@ public class ConnectionTest {
         
         agent.setServerHost("localhost");
         agent.setServerName("server");
-        agent.setServerPort(8090);
+        agent.setServerPort(9010);
         agent.setAgentReconnectionTimeout(1);
         DefaultAgentStorage storage = new DefaultAgentStorage();
         storage.setStoragePath(properties.getProperty(GridProperties.STORAGE_PATH));
@@ -152,7 +156,7 @@ public class ConnectionTest {
             @Override
             public void run() {
                 try {
-                    server.startServer(8090, "server");
+                    server.startServer(9020, "server");
                 } catch (Exception e) {
                     errorContainer.setException(e);
                 }
@@ -171,13 +175,13 @@ public class ConnectionTest {
         AgentInformation agentInformation = new AgentInformation();
         agentInformation.setHost("localhost");
         agentInformation.setName("Agent");
-        agentInformation.setPort(8091);
+        agentInformation.setPort(8092);
         agentInformation.setRemoteName("agent");
         agent.setAgentInformation(agentInformation);
         
         agent.setServerHost("localhost");
         agent.setServerName("server");
-        agent.setServerPort(8090);
+        agent.setServerPort(9020);
         agent.setAgentReconnectionTimeout(1);
         DefaultAgentStorage storage = new DefaultAgentStorage();
         storage.setStoragePath(properties.getProperty(GridProperties.STORAGE_PATH));
@@ -218,7 +222,7 @@ public class ConnectionTest {
             @Override
             public void run() {
                 try {
-                    server2.startServer(8090, "server");
+                    server2.startServer(9020, "server");
                 } catch (Exception e) {
                     errorContainer.setException(e);
                 }
