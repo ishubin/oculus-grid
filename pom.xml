@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.mindengine</groupId>
   <artifactId>oculus-grid</artifactId>
-  <version>1.0.1-SNAPSHOT</version>
+  <version>1.0.1</version>
   <name>Oculus Grid</name>
   <dependencies>
     <dependency>
@@ -15,12 +15,12 @@
     <dependency>
       <groupId>net.mindengine</groupId>
       <artifactId>jeremy</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0</version>
     </dependency>
     <dependency>
       <groupId>net.mindengine</groupId>
       <artifactId>oculus-experior</artifactId>
-      <version>1.0.3</version>
+      <version>1.0.4</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -79,6 +79,12 @@
       <url>http://mvnrepo.mindengine.net/repository</url>
     </repository>
   </repositories>
+  <distributionManagement>
+    <repository>
+      <id>mindengine.local</id>
+      <url>file:///${basedir}/../maven-repo/repository</url>
+    </repository>
+  </distributionManagement>
   <licenses>
     <license>
       <name>GNU General Public License 3</name>
