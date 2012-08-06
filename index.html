@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Oculus Grid - Introduction </title>
+        <link href="./main.css" rel="stylesheet" type="text/css"/>
+        <link href="./favicon.png" rel="icon" type="image/png"/>
+    </head>
+    
+    <body>
+        <!--[if lt IE 9]> <font color="red" size="32px">This website is not supported in Internet Explorer version below 9. Please use alternative browsers: Firefox, Chrome, Safari </font><![endif]-->
+        <div id="header-container">
+            <header>
+                <a id="oculus-logo" href="http://oculus.mindengine.net" title="Oculus Test Automation"></a>
+
+                <h1>Oculus Grid</h1>
+                <h2>Faster feedback for your tests</h2>
+            </header>
+        </div>
+        <navigation>
+            <ul id="menu">
+                <li><a id="menu-intro" class="selected" href="./index.html"><span>Welcome</span></a></li>
+                <li><a id="menu-reference" class="" href="./reference.html"><span>Reference</span></a></li>
+                <li><a id="menu-download" class="" href="./download.html"><span>Download</span></a></li>
+                <li><a id="menu-github" class="" href="https://github.com/ishubin/oculus-grid"><span>On Github</span></a></li>
+                <li><a id="menu-contact" class="" href="./contact.html"><span>Contact</span></a></li>
+            </ul>
+        </navigation>
+        <div id="content-container">
+            <article>
+                <h2><span class="header-first">Oculus Grid</span> <span class="header-second">Introduction</span></h2>
+                <p>
+                <b>Oculus Grid</b> is used to run test suites in parallel so you have a faster feedback from your tests. You can easily scale whole grid by adding more agent machines. By default it is configured to run <a href="http://experior.oculus.mindengine.net">Oculus Experior</a> tests but you can extend it to work with any other test frameworks.
+                </p>
+                <p>
+                Oculus Grid consists of Server and multiple Agents.
+                </p>
+                <ul id="features-list">
+                    <li><b>Easy to use</b> 
+                    Oculus Grid comes out-of-the-box with simple configuration so you can just run it and connect as many agents as you need.
+                    </li>
+                    <li><b>Extendable</b> 
+                    By default Oculus Grid works with <a href="http://experior.oculus.mindengine.net">Oculus Experior</a>. But if you want to use some other test framework like TestNG or JUnit you can extend oculus grid with your own modules for running test suites. 
+                    </li>
+                    <li class="end"></end>
+                    <li><b>Easy to adjust</b>
+                    Oculus Grid is using open HTTP JSON communication so it already gives you an open API. 
+                    </li>
+                </ul>
+                <div style="clear:both"></div>
+                <p>
+                For more information please read <a href="./reference.html">Reference page</a>
+                </p>
+            </article>
+        </div>
+        <div id="footer-container">
+            <footer>
+                <span id="footer-author">Developed by <a href="./contact.html">Ivan Shubin</a></span> 
+            </footer>
+        </div>
+    </body>
+</html>

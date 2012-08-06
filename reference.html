@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Oculus Grid - Reference</title>
+        <link href="./main.css" rel="stylesheet" type="text/css"/>
+        <link href="./favicon.png" rel="icon">
+    </head>
+    
+    <body>
+        <!--[if lt IE 9]> <font color="red" size="32px">This website is not supported in Internet Explorer version below 9. Please use alternative browsers: Firefox, Chrome, Safari </font><![endif]-->
+        <div id="header-container">
+            <header>
+                <div id="oculus-logo"></div>
+
+                <h1>Oculus Grid</h1>
+                <h2>Faster feedback for your tests</h2>
+            </header>
+        </div>
+        <navigation>
+            <ul id="menu">
+                <li><a id="menu-intro" href="./index.html"><span>Welcome</span></a></li>
+                <li><a id="menu-reference" class="selected" class="" href="./reference.html"><span>Reference</span></a></li>
+                <li><a id="menu-download" class="" href="./download.html"><span>Download</span></a></li>
+                <li><a id="menu-github" class="" href="https://github.com/ishubin/oculus-grid"><span>On Github</span></a></li>
+                <li><a id="menu-contact" class="" href="./contact.html"><span>Contact</span></a></li>
+            </ul>
+        </navigation>
+        <div id="content-container">
+            <article>
+                <h2><span class="header-first">Reference</span> <span class="header-second">Table of Contents</span></h2>
+                <ul class="table-of-contents">
+                    <li><a href="#_a_setup">Setup</a></li>
+                    <li><a href="#_a_server">Server</a>
+                        <ul>
+                            <li><a href="#_a_server">Configuration</a></li>
+                            <li><a href="#_a_server_run">Running</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#_a_agent">Agent</a>
+                        <ul>
+                            <li><a href="#_a_agent">Configuration</a></li>
+                            <li><a href="#_a_agent_run">Running</a></li>
+                        </ul>
+                    </li>
+                </uL>
+
+
+                <h2 id="_a_setup"><span class="header-first">Grid</span> <span class="header-second">Setup</span></h2>
+                <p>
+                Dowload <a href="./download.html">oculus-grid</a> binary zip archive and extract it somewhere on your file system.
+                Server and Agent are configured separately in <b>grid.server.properties</b> and <b>grid.agent.properties</b>
+                </p>
+                <div style="text-align:center;width:auto;">
+                    <img src="./grid-structure.png" align="center"/>
+                </div>
+                <h2 id="_a_server"><span class="header-first">Configuring</span> <span class="header-second">Server</span></h2>
+                <p>
+                <b>Oculus Grid</b> can be run as is in both roles: Server and Agent. But if you need to change settings you can do it in two ways: editting <b>grid.server.properties</b> or using System properties. You can change port number and <b>Server Storage</b> location. Server Storage is used to store all jar libraries for your test projects so later they are used for synchronizing with <b>Agent Storage</b> and are used for running test suites on Agent.
+                </p>
+                <h2 id="_a_server_run"><span class="header-first">Running</span> <span class="header-second">Server</span></h2>
+                <p>
+                For running <b>Grid Server</b> you need to run the following command in grid directory
+                </p>
+                <div class="source">
+<pre>
+java -jar oculus-grid.jar server 
+</pre>
+                </div>
+                
+                <p>
+                For Linux you can use <b>run-server.sh</b> script
+                </p>
+                <div class="source">
+<pre>
+./run-server.sh
+</pre>
+                </div>
+
+                <p>
+                You can also configure Grid Server using system properties 
+                </p>
+                <div class="source">
+<pre>
+java -jar oculus-grid.jar server -Dserver.port=1010 -Dstorage.path=/opt/grid/storage
+</pre>
+                </div>
+
+                <p>
+                This is how a common Server configuration look like  
+                </p>
+                <div class="source">
+<pre>
+<com># Network port. Make sure it is the same in all agents configurations</com>
+server.port = <str>8090</str>
+<com># Name of a server. Make sure it is the same in all agents configurations</com>
+server.name = <str>grid</str>
+
+<com># The amount of time in minutes in which
+# the completed tasks will be removed from TRMServer</com>
+server.store.completed.tasks.time = <str>2880</str>
+
+<com># Path to projects storage directory</com>
+storage.path = <str>storage</str>
+</pre>
+                </div>
+
+                <h2 id="_a_agent"><span class="header-first">Configuring</span> <span class="header-second">Agent</span></h2>
+                <p>
+                Agent can be configured in same ways as Server: using <b>grid.agent.properties</b> file or with system properties.
+                </p>
+                <div class="source">
+<pre>
+<com># Hostname or IP address of a server</com>
+server.host = <str>172.16.23.10</str>
+
+<com># Network port on which server is listening</com>
+server.port = <str>8081</str>
+
+<com># Remote name of a server. Make sure it is the same as it is set on server</com>
+server.name = <str>grid</str>
+
+<com># Hostname or IP address of agent by which server can connect to agent.</com>
+agent.host = <str>172.16.23.11</str>
+
+<com># Name of agent. Make sure it is unique for all agents
+# as it is used on Server for filtering agents</com>
+agent.name = <str>Agent_1</str>
+
+<com># Description text of agent. It is being used by oculus frontend.</com>
+agent.description = <str>OS: Linux\nCPU: Pentium III 2 GGz\nRAM: 1.0 GB\nBrowsers: Firefox</str>
+
+<com># Remote name should be only unique within same host.
+# In case you run multiple agents on same machine you need
+# to make sure they don't use same remote names</com>
+agent.remoteName = <str>agent</str>
+
+<com># Network port on which agent will be running
+# In case you run multiple agents on same machine you need
+# to make sure they don't use same port</com>
+agent.port = <str>8091</str>
+
+<com># Period in seconds in which agent checks the connection to server 
+# and tries to reconnect in case if connection was lost</com>
+agent.reconnect.timeout = <str>5</str>
+
+<com># Path to agent storage.
+# If you run multiple agents on same machine you need
+# to make sure you don't use the same directory</com> 
+storage.path = <str>storage</str>
+
+<com># A path to an oculus-grid library.
+# It is needed for running a subprocess when executing a test suite on agent.</com>
+grid.library = <str>oculus-grid.jar</str>
+
+<com># A template for launching a subprocess for executing a test suite</com>
+agent.oculus.runner.process = <str>java -classpath "${agent.agentOculusGridLibrary}${ctx.jlibSeparator}${ctx.projectDir}/libs/*${ctx.jlibSeparator}${ctx.projectDir}/lib/*${ctx.jlibSeparator}${ctx.projectDir}/*" net.mindengine.oculus.grid.runner.DefaultOculusRunner localhost ${agent.agentInformation.port} ${agent.agentInformation.remoteName} ${ctx.suiteFile}</str>
+
+</pre>
+                </div>
+
+                <h2 id="_a_agent_run"><span class="header-first">Running</span> <span class="header-second">Agent</span></h2>
+                <p>
+                For running Agent just use this command in the oculus-grid directory
+                </p>
+                <div class="source">
+<pre>
+java -jar oculus-grid.jar agent 
+</pre>
+                </div>
+                <p>
+                In Linux you can launch <b>run-agent.sh</b> script
+                </p>
+                <div class="source">
+<pre>
+./run-agent.sh
+</pre>
+                </div>
+                <p>
+                You can also specify some agent configurations using system properties.
+                </p>
+                <div class="source">
+<pre>
+./run-agent.sh -Dagent.name=Agent_123
+</pre>
+                </div>
+            </article>
+        </div>
+        <div id="footer-container">
+            <footer>
+                <span id="footer-author">Developed by <a href="./contact.html">Ivan Shubin</a></span> 
+            </footer>
+        </div>
+    </body>
+</html>
