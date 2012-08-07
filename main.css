@@ -134,7 +134,7 @@ header h1, header h2 {
     position: absolute;
     margin:0px;
     padding:0px;
-    right:10px;
+    right:-5px;
     top:-8px;
     width:195px;
     height:130px;
@@ -167,18 +167,27 @@ footer {
     text-align: left;
     vertical-align: bottom;
 }
-#footer-author {
-    position:relative;
+#footer-block {
     display:block;
-    top:40px;
-    left:20px;
+    
 }
-#footer-author a, #footer-author a:visited, #footer-author a:active {
+footer a, footer a:visited, footera:active {
     color:#FA8A11;
 }
-#footer-author a:hover  {
+footer a:hover  {
     color:#96C5FA;
 }
+footer .block {
+    display: block;
+    float:left;
+    width:200px;
+    min-height:70px;
+}
+footer .block a {
+    display:block;
+    margin-top:5px;
+}
+
 h1, h2 { 
     font-family:helvetica;
     font-weight:bold;
@@ -229,6 +238,8 @@ article h1, article h2 {
 #features-list li i {
     font-weight:bold;
 }
+
+
 span.header-first {
     color: #3C94FA;
     text-shadow:-1px -1px 0px #0074FA;
